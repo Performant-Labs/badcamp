@@ -37,3 +37,12 @@ $RECYCLE.BIN/
 # Per https://getcomposer.org/doc/articles/authentication-for-private-packages.md#authentication-in-auth-json-per-project,
 # this should never be under version control.
 /auth.json
+
+# Coding pipeline run state and worktrees
+docs/handoffs/state.json
+docs/handoffs/*/.stage/
+.claude/worktrees/
+.phpunit.cache/
+# Generated from the private Aftersight Claude release; regenerate per machine
+# (see "Coding pipeline" in README.md). Not committed: this repo is public.
+.claude/agents/

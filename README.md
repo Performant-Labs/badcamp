@@ -30,6 +30,22 @@ ddev composer require drupal/drupal_cms_starter --update-with-all-dependencies
 ddev drush site:install /var/www/html/recipes/drupal_cms_starter --yes
 ```
 
+## Coding pipeline
+
+This project uses Performant Labs' coding pipelines (Claude Code and OpenCode runners), pinned in
+`.aftersight/pipeline-pin.json`. The releases come from a private repository, so setting them up
+needs read access to it. After cloning, from the project root:
+
+```shell
+git clone git@github.com:Performant-Labs/aftersight.git ~/aftersight-pipeline
+git -C ~/aftersight-pipeline checkout opencode-pipeline-v0.1.0
+node ~/aftersight-pipeline/scripts/pipeline-shim.mjs                        # OpenCode
+node ~/aftersight-pipeline/scripts/pipeline-resolve.mjs --pipeline claude   # Claude
+node .aftersight/releases/claude/workflow/sync-role-docs.mjs --project .   # Claude role docs
+```
+
+Tests run with `scripts/run-tests.sh` (PHPUnit inside DDEV).
+
 ## Documentation
 
 * [Drupal CMS User Guide](https://project.pages.drupalcode.org/drupal_cms/)

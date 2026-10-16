@@ -72,6 +72,7 @@
         "drupal/yoast_seo": "^2.1"
     },
     "require-dev": {
+        "drupal/core-dev": "^11.4",
         "drush/drush": "^13.7"
     },
     "conflict": {
@@ -88,7 +89,9 @@
             "drupal/core-vendor-hardening": true,
             "drupal/site_template_helper": true,
             "php-http/discovery": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "phpstan/extension-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "bin-dir": "vendor/bin",
         "sort-packages": true,
