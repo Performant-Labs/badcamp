@@ -9,6 +9,7 @@
       "mode": "primary",
       "color": "info",
       "prompt": "{file:./.aftersight/prompts/orchestrator.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": "allow",
         "bash": "allow",
@@ -29,6 +30,7 @@
       "mode": "subagent",
       "color": "success",
       "prompt": "{file:./.aftersight/prompts/tester.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -48,6 +50,7 @@
       "mode": "subagent",
       "color": "warning",
       "prompt": "{file:./.aftersight/prompts/feature-implementor.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -75,6 +78,7 @@
       "mode": "subagent",
       "color": "info",
       "prompt": "{file:./.aftersight/prompts/architecture-reviewer.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -90,6 +94,7 @@
       "mode": "subagent",
       "color": "error",
       "prompt": "{file:./.aftersight/prompts/spec-auditor.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -105,6 +110,7 @@
       "mode": "subagent",
       "color": "info",
       "prompt": "{file:./.aftersight/prompts/final-reviewer.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -120,6 +126,7 @@
       "mode": "subagent",
       "color": "warning",
       "prompt": "{file:./.aftersight/prompts/designer.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
@@ -135,6 +142,7 @@
       "mode": "subagent",
       "color": "warning",
       "prompt": "{file:./.aftersight/prompts/playwright-ui-walkthrough.md}",
+      "model": "zai/glm-5.3",
       "permission": {
         "edit": {
           "*": "deny",
