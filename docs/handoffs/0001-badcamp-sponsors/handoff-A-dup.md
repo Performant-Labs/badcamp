@@ -72,3 +72,55 @@ Two fold-ins, both "delete mechanism, change config, route a one-line test repai
 
 Everything else stands as implemented. After the two folds, re-run the suite and the live-site
 install/uninstall check; then re-enter A for the re-review of just these seams.
+
+## Round 2 — 2026-10-17
+
+**Diff reviewed:** `git diff cbfdb2d..6ce742c` (round-1 verdict commit → fold + test-repair commit)
+**Verdict:** PASS
+
+### Summary
+
+Both block findings were folded exactly as specified, and the fold introduced no new drift. The
+diff is precisely deletions + 3 one-line config changes + 2 sanctioned test repairs + handoff/
+journal docs — nothing else. Finding 1: `src/Access/TrimmingPermissionAccessCheck.php` (42 lines)
+and `src/BadcampSponsorsServiceProvider.php` (31 lines) are deleted (directories removed; zero
+grep matches for either class, for any `ServiceProvider`, or for `condition.plugin.node_type`
+anywhere in the module), and `views.view.coupons.yml:561` now ships the unspaced
+`perm: 'access sponsors section,view coupon content'` in the `default:` display — the file's only
+`access:` stanza, so `page_1` and `data_export_1` inherit it and one line covers all displays and
+the CSV route. The AND contract is now carried end-to-end by stock core, verified on core source:
+`user/src/Plugin/views/access/Permission.php:96` copies `perm` verbatim to the route's
+`_permission` requirement, and `user/src/Access/PermissionAccessCheck.php` splits the unspaced
+string on the bare comma into exactly `['access sponsors section', 'view coupon content']` with
+`'AND'` — both permissions required, no leading-space poisoning, no site-wide service swap.
+Finding 2: `src/Plugin/Condition/NodeType.php` (141 lines) is deleted along with the
+`condition.plugin.node_type` schema stanza (module schema now opens directly with the
+`views.field.badcamp_sponsors_coupon_count` stanza); both `pathauto.pattern.{sponsor,campaign}.yml`
+ship `id: entity_bundle:node` with the identical `bundles`/`context_mapping` shape, resolving to
+core's deriver-backed `EntityBundle` (`#[Condition(id: "entity_bundle", deriver:
+EntityBundleDeriver::class)]`, `core/lib/Drupal/Core/Entity/Plugin/Condition/EntityBundle.php:15-17`)
+under core's own `condition.plugin.entity_bundle:*` schema
+(`core.data_types.schema.yml:510`). T's repairs changed only the two stale pins — the
+`SectionAccessTest` expected literal to the unspaced form (with a comment correctly stating the
+core split semantics) and the `InstallTest` plugin-id comparison to `'entity_bundle:node'` — with
+the behavioral assertions untouched; the GREEN suite (40 tests, 392 assertions, exit 0) plus the
+documented bite-checks (single-perm mutation fails both the pin and `testSectionRouteAccess`;
+either variant of a selection-criteria id drift hard-fails install — `node_type` with core's own
+valid-ID list naming `entity_bundle:node`, `request_path` with `SchemaIncompleteException`)
+empirically confirm the contract still bites through the stock seams. Round-1 findings 3 and 4
+(`warn`: count-column sortability/perf; live-only uniqueness) remain open and routed to S at
+spec-audit — not re-litigated here.
+
+### Findings
+
+None. No parallel path remains; both folds deleted mechanism and moved the contract onto the
+stock platform seams named in round 1; no drive-by edits or new code appeared in the fold diff.
+
+### Notes for O
+
+- Out-of-diff residue, not a fold finding: the working tree carries an **uncommitted**
+  `web/robots.txt` modification (removed `Sitemap: /sitemap.xml` line) that is not part of
+  `cbfdb2d..6ce742c` (HEAD still carries the line) and is disclosed as pre-existing/do-not-commit
+  in both handoff-F and handoff-T-green. Triage before merge — the merge-forward worktree-clean
+  verification will refuse a dirty worktree regardless.
+- Proceed to spec-audit with round-1 warns 3 and 4 attached as open questions for S.

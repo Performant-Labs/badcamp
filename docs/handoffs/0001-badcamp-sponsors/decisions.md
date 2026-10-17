@@ -129,3 +129,13 @@
   `PermissionAccessCheck.php:37` bare-comma AND split; PluginNotFound message listing
   `entity_bundle:node` as the live bundle condition; bite-check transcripts in
   handoff-T-green.md "a-dup round 2 repairs".
+
+## a-dup round 2 verdict — 2026-10-16
+- **Decided:** A re-review **PASS**. Both blocks folded exactly as prescribed: 214 lines of
+  parallel mechanism + 8 schema lines deleted; contract moved to stock seams (unspaced views
+  `perm` AND-split by core's PermissionAccessCheck; `entity_bundle:node` via core's deriver).
+  Fold diff verified in full: no new files, no drive-by edits. Warns 3-4 stand routed to S.
+- **Assumed:** none.
+- **Hedged:** uncommitted pre-existing `web/robots.txt` scaffold drift sits in the working tree
+  (out of every committed diff); O will restore it before the merge advance, journaled there.
+- **Evidence:** handoff-A-dup.md `## Round 2`; T's bite-check transcripts in handoff-T-green.md.
