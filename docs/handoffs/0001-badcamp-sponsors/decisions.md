@@ -241,3 +241,36 @@
   uninstall check below proves the module's preuninstall removes nodes WITH their aliases.
 - **Evidence:** handoff-T-green.md + handoff-F.md "post-audit rework" sections; handoff-S.md
   Round 3; live observation recorded in this entry.
+
+## finish checks (operator-requested) — 2026-10-17
+- **Decided:** ran the issue's install/uninstall check against the WORKTREE's code (drush
+  bootstrapped from the worktree against the shared DDEV DB, then restored):
+  - `ddev drush cr` on the main site: success.
+  - `drush en badcamp_sponsors`: installs clean; all 10 checked config objects PRESENT
+    (types x3, views x3, patterns x2, role, sitemap bundle settings); views_data_export +
+    csv_serialization enabled by the dependency.
+  - Live behaviour: auto title `FIXED10 — Acme Corp / Fall Blast`; sponsor/campaign aliases
+    correct; NEW coupon after the rework fix: NO alias + PathautoState::SKIP (the earlier
+    pre-fix alias from the starter's catch-all is what triggered the post-audit rework);
+    duplicate code per sponsor+campaign rejected (4 violations); sponsor delete FORBIDDEN with
+    a live coupon AND with only a trashed coupon.
+  - `drush pmu badcamp_sponsors`: 0 module nodes remaining (incl. trashed, raw table counts),
+    0 field tables, 0 aliases (pre-fix alias included), 0 module config; views_data_export and
+    csv_serialization stay enabled.
+  - Re-enable works (coupon type PRESENT again); then uninstalled again and
+    views_data_export + csv_serialization also uninstalled to restore the shared DB to its
+    pre-check state; final `ddev drush cr` success.
+- **Assumed:** none.
+- **Hedged:** the two "MISSING" lines in the first live check were my script's bug (read `id`
+  from config objects whose id lives in the name); corrected check shows all PRESENT.
+- **Evidence:** this journal entry; run transcripts in the session; suite OK (42/409, exit 0).
+
+## run state at PR — 2026-10-17
+- **Decided:** PR #2 open against main, closing #1. All phase gates green: preflight PASS,
+  survey-brief DONE, design N/A, A PASS, T RED→GREEN, F, a-dup PASS (r2, r3), U N/A,
+  S PASS (r2, r3). NOT merged per operator instruction. AC 9 (post-merge walkthrough on the
+  running site) remains the single open item, executed after merge per the issue.
+- **Assumed:** push/PR access held (SSH remote + gh).
+- **Hedged:** none.
+- **Evidence:** state.json (phasesCompleted, prNumber 2); PR
+  https://github.com/Performant-Labs/badcamp/pull/2.
