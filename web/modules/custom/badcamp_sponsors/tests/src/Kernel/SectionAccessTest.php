@@ -64,9 +64,11 @@ class SectionAccessTest extends KernelTestBase {
       'access sponsors section',
       $provider->getRouteByName('view.campaigns.page_1')->getRequirement('_permission')
     );
-    // The coupons page requires the coupon-view permission as well.
+    // The coupons page requires the coupon-view permission as well. Core's
+    // PermissionAccessCheck splits on the bare comma and conjuncts AND, so
+    // the unspaced pair below means "both permissions required".
     $this->assertSame(
-      'access sponsors section, view coupon content',
+      'access sponsors section,view coupon content',
       $provider->getRouteByName('view.coupons.page_1')->getRequirement('_permission')
     );
   }

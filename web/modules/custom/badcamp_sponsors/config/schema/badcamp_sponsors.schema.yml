@@ -1,11 +1,3 @@
-condition.plugin.node_type:
-  type: condition.plugin
-  mapping:
-    bundles:
-      type: sequence
-      sequence:
-        type: string
-
 views.field.badcamp_sponsors_coupon_count:
   type: views_field
   label: 'Coupon count'

@@ -558,7 +558,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'access sponsors section, view coupon content'
+          perm: 'access sponsors section,view coupon content'
       cache:
         type: tag
         options: {  }

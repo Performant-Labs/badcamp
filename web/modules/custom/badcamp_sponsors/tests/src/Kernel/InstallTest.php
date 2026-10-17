@@ -164,7 +164,7 @@ class InstallTest extends KernelTestBase {
       $this->assertSame('canonical_entities:node', $pattern->getType(), "$id applies to node URLs.");
       $bundles = [];
       foreach ($pattern->getSelectionConditions() as $condition) {
-        if ($condition->getPluginId() === 'node_type') {
+        if ($condition->getPluginId() === 'entity_bundle:node') {
           $bundles = array_merge($bundles, $condition->getConfiguration()['bundles'] ?? []);
         }
       }

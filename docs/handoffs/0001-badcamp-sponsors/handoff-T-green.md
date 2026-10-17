@@ -161,3 +161,69 @@ None.
 ## Next
 
 No UI surface in this run (brief: uiSurface `false`) — **U is N/A; ready for S.**
+
+## a-dup round 2 repairs
+
+**Date:** 2026-10-17. **Context:** F folded A-dup findings 1 & 2 (handoff-F "Fold (a-dup round
+2)"); production-only, leaving exactly two stale T pins failing. Tests-only repairs below; no
+production edits; nothing committed.
+
+### Repairs (old → new, both verified against on-disk config + core before editing)
+
+1. `SectionAccessTest.php` (pin at line 69 → 71 after a 2-line comment addition):
+   `'access sponsors section, view coupon content'` → `'access sponsors section,view coupon content'`.
+   On-disk fact: `views.view.coupons.yml:561` ships the unspaced form (default display, inherited
+   by page_1 + data_export_1, so the CSV route too). **No weakening:** the pin asserts the same
+   contract fact — the route's `_permission` requirement lists BOTH permissions — and core
+   `PermissionAccessCheck.php:37` (`explode(',', …)` → `'AND'`) makes the unspaced literal the
+   only correct spelling of it (a spaced string would leave a leading space on the second perm).
+   The behavioral proof is untouched: `testSectionRouteAccess` still shows section-manager denied
+   / full-manager allowed on `view.coupons.page_1`.
+2. `InstallTest.php:167`: `getPluginId() === 'node_type'` → `getPluginId() === 'entity_bundle:node'`.
+   On-disk fact: both `pathauto.pattern.sponsor.yml:19` and `pathauto.pattern.campaign.yml:19`
+   ship `id: entity_bundle:node`. **No weakening:** surrounding assertions (pattern present,
+   pattern string, type, bundle membership) intact; core's live mechanism is
+   `#[Condition(id: "entity_bundle", deriver: EntityBundleDeriver::class)]` → derived id
+   `entity_bundle:node`, and core's node module ships no `node_type` condition.
+
+### RED baseline (pre-repair, matches F's evidence)
+
+`Tests: 40, Assertions: 388, Failures: 2` — exactly the two stale pins
+(`InstallTest::testPathautoPatternsAreCreated` at :171; `SectionAccessTest::testSectionRoutes`
+spaced-vs-unspaced diff). Exit 1.
+
+### GREEN (post-repair)
+
+`bash scripts/run-tests.sh`, two consecutive runs, both `OK (40 tests, 392 assertions)`, exit 0
+(388 → 392: the two tests now complete their assertion sets).
+
+### Bite-checks (temporary config mutations via bash; byte-exact revert proven by sha256)
+
+1. **Perm string** — `views.view.coupons.yml:561` temporarily `'access sponsors section,view
+   coupon content'` → `'access sponsors section'`. SectionAccessTest: **2 failures, exit 1**:
+   `testSectionRoutes` at :70 (the repaired pin: `-'access sponsors section,view coupon content'
+   /+'access sponsors section'`) AND `testSectionRouteAccess` at :133 ("The coupons page also
+   requires the coupon-view permission") — the contract bites at both the pin and the behavior.
+   Reverted; sha256 `9f2e9850…` matches pre-mutation hash.
+2. **Pathauto selection id** — `pathauto.pattern.sponsor.yml:19`, two variants, InstallTest red
+   on both (9 errors, exit 2):
+   - `entity_bundle:node` → `node_type`: `PluginNotFoundException: The "node_type" plugin does
+     not exist. Valid plugin IDs … are: request_path, current_theme, response_status, user_role,
+     entity_bundle:node` — core's own discovery list confirms the repair's factual basis.
+   - `entity_bundle:node` → `request_path` (resolvable id, wrong shape):
+     `SchemaIncompleteException: …selection_criteria.9f0a5ec2….bundles missing schema`.
+   Any drift of that id — resolvable or not — hard-fails InstallTest at install; the :167 pin
+   remains the runtime-level guard for cleanly-installing shapes. Reverted; sha256 `2144819d…`
+   matches pre-mutation hash.
+
+### Tier 1 after repairs
+
+- Suite after bite-reverts: `OK (40 tests, 392 assertions)`, exit 0.
+- phpcs (`vendor/bin/phpcs --standard=Drupal,DrupalPractice` on
+  `web/modules/custom/badcamp_sponsors`, via ddev against the worktree): **0 errors, 0 warnings**,
+  exit 0.
+- `git status`: config/ at exactly F's fold state after reverts (no bite residue); the only new
+  diffs are the two test pins + this handoff/journal. Pre-existing `web/robots.txt` drift
+  untouched, still do-not-commit.
+
+**Final suite line: `OK (40 tests, 392 assertions)` — exit 0.**

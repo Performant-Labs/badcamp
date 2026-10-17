@@ -202,3 +202,70 @@ reach GREEN without the test-side repairs listed above (1 blocker: the `installS
 3 environment prerequisites; 2 assertion-shape bugs) — routed to T/O per the process. Re-run:
 `bash scripts/run-tests.sh`; expect the 29 `SchemaObjectExistsException` errors until the test
 repair lands, then GREEN.
+
+## Fold (a-dup round 2)
+
+**Date:** 2026-10-17. **Contract:** handoff-A-dup.md findings 1 & 2 (block). Production only;
+no tests touched; nothing committed. The T-side repairs A routed (installSchema ordering,
+environment prerequisites, assertion shapes) have since landed — the suite ran 40 tests /
+388 assertions before this fold with 0 failures; only the two stale pins below remain.
+
+### What was deleted / changed
+
+Finding 1 — global permission-check swap removed:
+
+- DELETED `src/Access/TrimmingPermissionAccessCheck.php` (42 lines) — the whitespace-tolerant
+  `PermissionAccessCheck` subclass.
+- DELETED `src/BadcampSponsorsServiceProvider.php` (31 lines) — the site-wide
+  `access_check.permission` class swap. Now-empty `src/Access/` directory removed too.
+  (~73 lines of mechanism gone.)
+- `config/install/views.view.coupons.yml:561`: `perm: 'access sponsors section, view coupon content'`
+  → `perm: 'access sponsors section,view coupon content'` (unspaced; the `access` stanza lives on
+  the default display and is inherited by page_1 + data_export_1, so one line covers all displays
+  and the CSV route). Route keeps AND semantics via stock core's checker.
+
+Finding 2 — duplicated condition plugin removed:
+
+- DELETED `src/Plugin/Condition/NodeType.php` (141 lines) — the mirror of core's `EntityBundle`.
+  Now-empty `src/Plugin/Condition/` directory removed too.
+- `config/install/pathauto.pattern.sponsor.yml:19` and `config/install/pathauto.pattern.campaign.yml:19`:
+  `id: node_type` → `id: entity_bundle:node` (bundles/context_mapping shape unchanged).
+- `config/schema/badcamp_sponsors.schema.yml`: removed the `condition.plugin.node_type` stanza
+  (lines 1–7 + separator; core's `condition.plugin.entity_bundle:*` schema now applies). The
+  `views.field.badcamp_sponsors_coupon_count` stanza is untouched.
+
+Total: ~221 lines of mechanism deleted, 3 config lines changed, 1 schema stanza removed.
+
+### Exact failing tests left for T (the expected stale pins — do NOT fix in production)
+
+1. `Drupal\Tests\badcamp_sponsors\Kernel\SectionAccessTest::testSectionRoutes` — fails at
+   `SectionAccessTest.php:68`: expected `'access sponsors section, view coupon content'` (spaced),
+   actual `'access sponsors section,view coupon content'`. Repair: expected literal at line 69
+   becomes the unspaced form (A-dup finding 1).
+2. `Drupal\Tests\badcamp_sponsors\Kernel\InstallTest::testPathautoPatternsAreCreated` — fails at
+   `InstallTest.php:171` ("Failed asserting that an array contains 'sponsor'"). Root cause is the
+   plugin-id pin at `InstallTest.php:167`: `getPluginId() === 'node_type'` now matches nothing
+   (the pattern ships `entity_bundle:node`), so the filtered condition list is empty and the
+   bundle assertion at 171 never sees 'sponsor'/'campaign'. Repair: compare against
+   `'entity_bundle:node'` at line 167 (A-dup finding 2).
+
+### Verification evidence
+
+- Suite (`bash scripts/run-tests.sh`, worktree session root):
+  `Tests: 40, Assertions: 388, Failures: 2.` — the two stale pins above, zero other failures,
+  zero errors.
+- Grep proof (all under `web/modules/custom/badcamp_sponsors`, after the fold): no matches for
+  `TrimmingPermissionAccessCheck`, `BadcampSponsorsServiceProvider`, `Plugin/Condition`,
+  `condition.plugin.node_type`, and no `node_type` in `config/` or `src/`. The only remaining
+  `node_type` strings in the module are the `node.add` **route parameters** in
+  `badcamp_sponsors.links.action.yml` (core's `{node_type}` placeholder — unrelated to the
+  condition plugin) and the two stale test pins above (T's to repair).
+- phpcs (Drupal,DrupalPractice, via ddev against the worktree): **0 errors, 0 warnings** (exit 0).
+
+### Status
+
+Both folds complete as specified; no other behavior changed. Re-enter A for re-review of these
+two seams, then T repairs the two stale pins.
+
+Note: the worktree also carries a pre-existing `web/robots.txt` modification (a removed
+`Sitemap: /sitemap.xml` line) that predates this fold — not mine, left untouched for O to triage.

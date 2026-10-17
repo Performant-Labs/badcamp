@@ -120,3 +120,12 @@
 - **Assumed:** none.
 - **Hedged:** none.
 - **Evidence:** handoff-A-dup.md findings 1-2 "Suggested fix" columns.
+
+## a-dup round 2 repairs — 2026-10-17
+- **Decided:** T repaired exactly the two stale pins (SectionAccessTest perm literal → unspaced
+  core-convention form; InstallTest condition plugin id → `entity_bundle:node`), same contract
+  facts asserted, no production edits; suite `OK (40 tests, 392 assertions)` twice + after bites.
+- **Evidence:** on-disk `views.view.coupons.yml:561` + `pathauto.pattern.*.yml:19`; core
+  `PermissionAccessCheck.php:37` bare-comma AND split; PluginNotFound message listing
+  `entity_bundle:node` as the live bundle condition; bite-check transcripts in
+  handoff-T-green.md "a-dup round 2 repairs".
