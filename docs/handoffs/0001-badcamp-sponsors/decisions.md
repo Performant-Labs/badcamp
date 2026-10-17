@@ -139,3 +139,15 @@
 - **Hedged:** uncommitted pre-existing `web/robots.txt` scaffold drift sits in the working tree
   (out of every committed diff); O will restore it before the merge advance, journaled there.
 - **Evidence:** handoff-A-dup.md `## Round 2`; T's bite-check transcripts in handoff-T-green.md.
+
+## spec-audit round 1 — 2026-10-16
+- **Decided:** S returned **REWORK** on exactly one gap: Coupon ID absent from the coupon edit
+  form (issue: "shown in lists and on the edit form once saved; never editable" — lists covered,
+  form not). All other ACs 1-8,10 PASS with cited tests; AC 9 correctly journal-pending; settled
+  decisions all hold. S ruled both A-dup warns non-violations (count column = trash-consistent
+  single source of truth; live-only uniqueness = platform default, restore-after-reissue edge
+  recorded as advisory). Rework loop: T adds the missing Kernel assertion (RED) → F implements
+  the read-only nid form element (GREEN) → scoped A-dup round 3 → S round 2.
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** handoff-S.md (per-AC table with file:line citations, both rulings).
