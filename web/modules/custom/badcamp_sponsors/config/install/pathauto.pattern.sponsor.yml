@@ -1,0 +1,27 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.sponsor
+  module:
+    - node
+  enforced:
+    config:
+      - node.type.sponsor
+    module:
+      - badcamp_sponsors
+id: sponsor
+label: Sponsor
+type: canonical_entities:node
+pattern: '/sponsor/[node:title]'
+selection_criteria:
+  9f0a5ec2-8cf7-4c61-8f31-1cf7f0b6ac01:
+    id: node_type
+    negate: false
+    context_mapping:
+      node: node
+    bundles:
+      sponsor: sponsor
+selection_logic: and
+weight: 0
+relationships: {  }

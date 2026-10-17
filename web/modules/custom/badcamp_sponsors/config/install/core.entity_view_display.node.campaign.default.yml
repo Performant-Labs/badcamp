@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.campaign
+  module:
+    - user
+  enforced:
+    module:
+      - badcamp_sponsors
+id: node.campaign.default
+targetEntityType: node
+bundle: campaign
+mode: default
+content:
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden: {  }

@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coupon_code
+    - node.type.coupon
+  enforced:
+    module:
+      - badcamp_sponsors
+id: node.coupon.field_coupon_code
+field_name: field_coupon_code
+entity_type: node
+bundle: coupon
+label: Code
+description: 'The code the sponsor supplied. Whitespace around the code is trimmed on save.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

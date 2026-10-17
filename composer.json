@@ -69,6 +69,7 @@
         "drupal/token_or": "^2.2",
         "drupal/trash": "^3.0.13",
         "drupal/view_password": "^6",
+        "drupal/views_data_export": "^1.10",
         "drupal/yoast_seo": "^2.1"
     },
     "require-dev": {

@@ -1,0 +1,27 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.campaign
+  module:
+    - node
+  enforced:
+    config:
+      - node.type.campaign
+    module:
+      - badcamp_sponsors
+id: campaign
+label: Campaign
+type: canonical_entities:node
+pattern: '/campaign/[node:title]'
+selection_criteria:
+  6d4b1c30-2f7a-4a3e-9d64-58f2a3c1e002:
+    id: node_type
+    negate: false
+    context_mapping:
+      node: node
+    bundles:
+      campaign: campaign
+selection_logic: and
+weight: 0
+relationships: {  }

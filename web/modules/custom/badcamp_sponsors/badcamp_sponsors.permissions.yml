@@ -1,0 +1,8 @@
+access sponsors section:
+  title: 'Access the Sponsors section'
+  description: 'View the Sponsors section and its CSV exports at /sponsors.'
+  restrict access: false
+view coupon content:
+  title: 'View coupon content'
+  description: 'View individual coupon records, including the private /sponsors/coupons list.'
+  restrict access: true
