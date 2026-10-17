@@ -96,3 +96,27 @@
   transcripts, cross-checks: composer.lock `views_data_export 1.10.0` + `csv_serialization
   4.0.1`, phpcs 0/0); suite output above; `git status` shows only the 8 test files + handoffs
   modified, nothing committed.
+
+## a-dup round 1 — 2026-10-16
+- **Decided:** A returned **BLOCK** (2 block, 2 warn). Blocks: (1) global `access_check.permission`
+  class swap via ServiceProvider existed only to honor T's spaced perm literal — core's checker
+  splits on bare commas and core ships zero spaced strings; stock unspaced perm delivers the same
+  AND semantics; (2) resurrected `node_type` condition plugin duplicates core's live
+  `entity_bundle:node` under an id core removed. Both folds are one-line config changes +
+  one-line test repairs that delete ~185 lines of mechanism. Warns routed to S: count-column
+  sortability/perf; live-only uniqueness (trash asymmetry).
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** handoff-A-dup.md round 1 (file:line for every claim: PermissionAccessCheck.php:37
+  bare explode(','), EntityBundle.php as the live mechanism; zero spaced perm strings in core
+  routing/views config).
+
+## a-dup round 2 (fold) — 2026-10-16
+- **Decided:** O respawns F to fold both blocks: unspaced `perm` in views.view.coupons.yml and
+  delete ServiceProvider + TrimmingPermissionAccessCheck; `entity_bundle:node` in the two
+  pathauto patterns and delete the mirrored NodeType plugin + its schema stanza. T then repairs
+  the two stale pins (SectionAccessTest literal, InstallTest plugin id) via the sanctioned
+  channel. Re-enter A afterwards.
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** handoff-A-dup.md findings 1-2 "Suggested fix" columns.
