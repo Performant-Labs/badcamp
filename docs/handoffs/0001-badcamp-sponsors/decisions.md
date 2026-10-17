@@ -42,3 +42,29 @@
   behavior of the issue's chosen mechanism, not a defect.
 - **Evidence:** `handoff-A.md` (patterns referenced with core/contrib file:line citations);
   amended `brief.md` ("Plan amendments after A's review") and `survey.md` Reuse-map rows.
+
+## t-red — 2026-10-16
+- **Decided:** suite = 10 Unit (pure rules: title builder `<code> — <sponsor> / <campaign>`,
+  code trim/normalize, redeemed-date rule with exact messages) + 30 Kernel (install/config
+  surface, CRUD+auto-title, validation, trash-aware delete-blocking, coupon view privacy,
+  section+CSV route access, pathauto, uninstall purity, workflow exclusion). Every Kernel test
+  installs via `module_installer` (the `drush en` equivalent). Contract names pinned in
+  `handoff-T-red.md`: permissions `access sponsors section` / `view coupon content`; service
+  `badcamp_sponsors.coupon_counter` (`countBySponsor`/`countByCampaign`); config names incl.
+  `simple_sitemap.bundle_settings.default.node.<bundle>`; views `sponsors|campaigns|coupons`
+  with `page_1` displays and `<path>/export.csv` data_export displays; `.info.yml` deps extended
+  with `link`, `datetime`, `image` (field-type providers — brief omitted them).
+- **Assumed:** trash's soft-delete works in Kernel tests by enabling `trash.settings`
+  `enabled_entity_types: [node: []]` **before** `installEntitySchema('node')` (verified against
+  `TrashEntityInfoHooks`/`TrashStorageTrait` source); node grants are inert in Kernel tests with
+  no `hook_node_grants` implementations (`NodeGrantDatabaseStorage` short-circuits to the
+  default grant), so delete-allow comes from node module's own `node_access` hook.
+- **Hedged:** a shared Kernel test base class is impossible pre-module (Drupal's PHPUnit
+  autoloader registers test namespaces only for discoverable extensions) — dropped it for 9
+  self-contained Kernel files; duplication accepted. `web/robots.txt` drift in the worktree
+  predates T (scaffold), flagged as do-not-commit.
+- **Evidence:** `bash scripts/run-tests.sh` → `Tests: 40, Assertions: 0, Errors: 40,
+  Warnings: 6`, exit 2 — Unit errors are `Class "Drupal\badcamp_sponsors\…" not found` at
+  assertion lines; Kernel errors are `MissingDependencyException: Unable to install modules
+  badcamp_sponsors` from `ModuleInstaller.php:156` in `setUp()`. Full mapping in
+  `handoff-T-red.md`.
