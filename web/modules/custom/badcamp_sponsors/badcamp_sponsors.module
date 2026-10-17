@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use Drupal\badcamp_sponsors\CouponCodeNormalizer;
 use Drupal\badcamp_sponsors\CouponTitleBuilder;
+use Drupal\badcamp_sponsors\DeleteRefusalReason;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityFormInterface;
@@ -53,7 +54,7 @@ function badcamp_sponsors_node_access(NodeInterface $entity, string $operation, 
       : $counter->countByCampaign($entity);
     if ($count > 0) {
       return AccessResult::forbidden()
-        ->setReason(sprintf('This %s is referenced by %d coupon(s), including coupons in trash.', $bundle, $count))
+        ->setReason(DeleteRefusalReason::build($bundle, $count))
         ->addCacheTags(['node_list:coupon']);
     }
     return AccessResult::neutral()->addCacheTags(['node_list:coupon']);
