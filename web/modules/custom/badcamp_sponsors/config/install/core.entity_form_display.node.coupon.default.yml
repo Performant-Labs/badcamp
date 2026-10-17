@@ -19,6 +19,11 @@ targetEntityType: node
 bundle: coupon
 mode: default
 content:
+  badcamp_sponsors_coupon_id:
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   created:
     type: datetime_timestamp
     weight: 10

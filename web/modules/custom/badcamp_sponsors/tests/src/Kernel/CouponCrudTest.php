@@ -11,7 +11,10 @@ use Drupal\node\NodeInterface;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests entity-API CRUD on the three types and the generated title (AC 2).
+ * Tests entity CRUD, generated coupon titles, and coupon form display.
+ *
+ * Covers all three node types, the generated coupon title (AC 2), and the
+ * coupon form-display contracts: hidden title widget, read-only Coupon ID.
  */
 #[Group('badcamp_sponsors')]
 class CouponCrudTest extends KernelTestBase {
@@ -131,6 +134,66 @@ class CouponCrudTest extends KernelTestBase {
     $this->assertNull(
       $form_display->getComponent('title'),
       'The title widget is hidden from the coupon form.'
+    );
+  }
+
+  /**
+   * Tests that the coupon edit form shows the saved Coupon ID read-only.
+   *
+   * Issue field spec: "shown in lists and on the edit form once saved; never
+   * editable".
+   *
+   * Pinned mechanism: a badcamp_sponsors_coupon_id extra field on the
+   * node.coupon default form display (a shown component, never hidden),
+   * populated by hook_form_NODE_FORM_alter for saved coupons as a
+   * #type => 'item' element whose #markup is the nid -- an 'item' is
+   * #input FALSE (rendered markup), so no editor input and no widget
+   * writing to the node.
+   */
+  public function testCouponIdShownReadOnlyOnEditForm(): void {
+    $sponsor = $this->createSponsor('Acme Corp');
+    $campaign = $this->createCampaign('Fall Blast');
+    $coupon = $this->createCoupon('SAVE20', $sponsor, $campaign);
+
+    // Build the real coupon edit form for the saved node (entity-form level;
+    // no browser).
+    $form = $this->container->get('entity.form_builder')->getForm($coupon, 'default');
+
+    // The Coupon ID is present on the built form and shows the saved ID.
+    $this->assertArrayHasKey(
+      'badcamp_sponsors_coupon_id',
+      $form,
+      'The Coupon ID element is present on the built coupon edit form.'
+    );
+    $element = $form['badcamp_sponsors_coupon_id'];
+    $this->assertSame(
+      'item',
+      $element['#type'] ?? NULL,
+      'The Coupon ID is a read-only #type => item element, never an editable widget.'
+    );
+    $this->assertSame(
+      'Coupon ID',
+      (string) ($element['#title'] ?? ''),
+      'The Coupon ID element is labeled for the editor.'
+    );
+    $this->assertStringContainsString(
+      (string) $coupon->id(),
+      (string) ($element['#markup'] ?? ''),
+      'The Coupon ID element renders the saved node ID.'
+    );
+
+    // The form display carries the extra field as a shown component, not
+    // hidden: the config contract behind the built form.
+    $form_display = EntityFormDisplay::load('node.coupon.default');
+    $this->assertNotNull($form_display, 'The coupon default form display exists.');
+    $this->assertIsArray(
+      $form_display->getComponent('badcamp_sponsors_coupon_id'),
+      'The Coupon ID extra field is a shown component of the coupon default form display.'
+    );
+    $this->assertArrayNotHasKey(
+      'badcamp_sponsors_coupon_id',
+      $form_display->get('hidden') ?? [],
+      'The Coupon ID component is not hidden on the edit form.'
     );
   }
 

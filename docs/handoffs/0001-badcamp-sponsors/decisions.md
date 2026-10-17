@@ -151,3 +151,29 @@
 - **Assumed:** none.
 - **Hedged:** none.
 - **Evidence:** handoff-S.md (per-AC table with file:line citations, both rulings).
+
+## spec-audit rework RED — 2026-10-17
+- **Decided:** T authored the one missing Kernel test
+  (`CouponCrudTest::testCouponIdShownReadOnlyOnEditForm`) pinning S's gap at the entity-form
+  level: built-form element present, `#type => 'item'` (read-only, `#input` FALSE), labeled
+  'Coupon ID', `#markup` = saved nid, plus the form-display config contract (shown component,
+  not hidden). Mechanism named for F: `badcamp_sponsors_coupon_id` extra field +
+  `hook_form_NODE_FORM_alter`, saved coupons only. Tests only; no production edits; nothing
+  committed.
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** RED run single file `Tests: 3, Assertions: 24, Failures: 1` (key-absent
+  failure at CouponCrudTest.php:161); full suite `Tests: 41, Assertions: 396, Failures: 1` —
+  exactly the new test; handoff-T-green.md "spec-audit rework: edit-form Coupon ID".
+
+## spec-audit rework GREEN — 2026-10-17
+- **Decided:** F implemented the read-only Coupon-ID edit-form element against T's RED and
+  GREEN held. T then fixed the 2 phpcs doc-comment errors F had flagged in
+  CouponCrudTest.php (short descriptions made single-line sentences ending in a period; no
+  behavior or assertion changes). Tests only; no production edits; nothing committed.
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** phpcs `Drupal,DrupalPractice` on the whole module incl. tests: 21/21 files,
+  0 errors / 0 warnings, exit 0; full suite `bash scripts/run-tests.sh` → OK (41 tests,
+  402 assertions), exit 0; handoff-T-green.md "spec-audit rework: edit-form Coupon ID" →
+  "Rework GREEN" lines.

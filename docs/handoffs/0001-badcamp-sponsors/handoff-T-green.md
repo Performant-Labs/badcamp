@@ -227,3 +227,70 @@ spaced-vs-unspaced diff). Exit 1.
   untouched, still do-not-commit.
 
 **Final suite line: `OK (40 tests, 392 assertions)` — exit 0.**
+
+## spec-audit rework: edit-form Coupon ID
+
+**Date:** 2026-10-17. **Context:** S round 1 REWORK item 1 (handoff-S.md:156-176) — the issue's
+field spec requires the Coupon ID "shown in lists and on the edit form once saved; never
+editable"; lists were covered, the edit form was not. T authors the missing coverage first
+(RED); tests only, no production edits, nothing committed.
+
+### New test
+
+`web/modules/custom/badcamp_sponsors/tests/src/Kernel/CouponCrudTest.php::testCouponIdShownReadOnlyOnEditForm`
+— placed in CouponCrudTest because that is where the suite's coupon form-display contract
+already lives (`testCouponTitleWidgetIsHidden`, config pinned via `EntityFormDisplay::load`);
+extends the class docblock to cover "coupon form-display contracts". It seeds a saved coupon
+(sponsor + campaign helpers reused), builds the real edit form via
+`entity.form_builder->getForm($coupon, 'default')` (entity-form level, Kernel-safe, no browser),
+then asserts:
+
+1. `$form['badcamp_sponsors_coupon_id']` exists;
+2. its `#type` is `'item'` — a Form API read-only element (`#input` FALSE): rendered markup,
+   never an editable widget writing to the node;
+3. its `#title` renders as `Coupon ID`;
+4. its `#markup` contains the saved nid;
+5. the `node.coupon.default` form display carries `badcamp_sponsors_coupon_id` as a **shown**
+   component (not in `hidden`) — the config contract behind the built form, pinned the same way
+   the suite pins other form-display facts.
+
+### Contract pinned for F (the mechanism to implement)
+
+A `badcamp_sponsors_coupon_id` **extra field** (pseudo-field) on the `node.coupon` form
+display, declared in `hook_entity_extra_field_info()`, placed as a component in
+`core.entity_form_display.node.coupon.default.yml` (`region: content`, not hidden), and
+populated for **saved** coupons only in `hook_form_NODE_FORM_alter`
+(`badcamp_sponsors_form_node_coupon_form_alter`) as:
+
+```php
+$form['badcamp_sponsors_coupon_id'] = [
+  '#type' => 'item',
+  '#title' => t('Coupon ID'),
+  '#markup' => $node->id(),
+];
+```
+
+An `item` is `#input` FALSE, so "never editable" holds by construction (no widget exists for
+nid); skip the element (or render it empty) when `$node->isNew()` — "once saved". Weight is
+implementation latitude (S allowed form top or footer; the code field starts at weight 1, so 0
+sits naturally above it).
+
+### RED evidence
+
+- Single file: `bash scripts/run-tests.sh web/modules/custom/badcamp_sponsors/tests/src/Kernel/CouponCrudTest.php`
+  → `Tests: 3, Assertions: 24, Failures: 1`, exit 1:
+  `CouponCrudTest::testCouponIdShownReadOnlyOnEditForm — The Coupon ID element is present on the
+  built coupon edit form. Failed asserting that an array has the key
+  'badcamp_sponsors_coupon_id'. (CouponCrudTest.php:161)` — fails for exactly the right reason
+  (the ID component/element is absent), not an import/setup error; the form build itself
+  succeeds (24 assertions ran before the failure) and the file's other 2 tests stay green.
+- Full suite: `bash scripts/run-tests.sh` → `Tests: 41, Assertions: 396, Failures: 1`, exit 1 —
+  exactly the new test; no collateral damage (40 pre-existing all pass).
+
+**RED is valid; F may implement against it.**
+
+### Rework GREEN (2026-10-17)
+
+- Nits fixed: the 2 phpcs doc-comment errors F flagged in `CouponCrudTest.php` (class + method short descriptions, lines ~16/~142) are now single lines ending in a period; descriptions kept accurate, no behavior or assertion changes.
+- phpcs (`Drupal,DrupalPractice` on `web/modules/custom/badcamp_sponsors`, tests included): 21/21 files clean — 0 errors, 0 warnings, exit 0.
+- Full suite: `bash scripts/run-tests.sh` → `OK (41 tests, 402 assertions)`, exit 0.

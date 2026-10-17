@@ -269,3 +269,61 @@ two seams, then T repairs the two stale pins.
 
 Note: the worktree also carries a pre-existing `web/robots.txt` modification (a removed
 `Sitemap: /sitemap.xml` line) that predates this fold — not mine, left untouched for O to triage.
+
+## spec-audit rework: edit-form Coupon ID
+
+**Date:** 2026-10-17. **Contract:** handoff-T-green.md "spec-audit rework: edit-form Coupon ID"
+(new test `CouponCrudTest::testCouponIdShownReadOnlyOnEditForm`, RED: 41 tests / 1 failure).
+
+### Mechanism used (the platform way, no parallel path)
+
+- **`hook_entity_extra_field_info()`** declares `badcamp_sponsors_coupon_id` as a form-context
+  extra field on entity type `node`, bundle `coupon` (label "Coupon ID", default weight 0) —
+  this is what makes the component placeable in the form display. Same pattern as contrib
+  `redirect`'s `url_redirects` extra field, verified on disk in this worktree.
+- **`badcamp_sponsors_form_node_form_alter()`** (the `hook_form_BASE_FORM_ID_alter` for
+  `node_form`, i.e. `hook_form_NODE_FORM_alter`) populates the element. The hook fires for
+  every node form, so it is scoped to the coupon bundle **in code** (`$node->bundle() !== 'coupon'`
+  returns early), and — for **saved coupons only** — sets `#type => 'item'`, `#title => t('Coupon ID')`,
+  `#markup => (string) $node->id()` (cast to string for the Render API's documented `#markup`
+  type; the pinned assertion `assertStringContainsString((string) $coupon->id(), …)` is
+  unaffected). An `item` is `#input` FALSE: rendered markup, no editor input, no widget
+  writing to the node — "never editable" holds by construction.
+- **`core.entity_form_display.node.coupon.default.yml`** ships the component as **shown**
+  (`content:`, `region: content`, weight 0, alphabetically first — above `field_coupon_code`
+  at weight 1). Widget-less shape (no `type` key — extra fields have no widget plugin; the
+  Kernel config-schema checker accepted it on install).
+
+Core's own `EntityFormDisplay::processForm()` (verified in-source, lines 232-249) then assigns
+the display weight to the element and `#access = FALSE` to any extra field that is not a shown
+component — so the form-display placement genuinely governs the element, and there is no second
+visibility path.
+
+### Files touched (production only; no tests edited; nothing committed)
+
+1. `web/modules/custom/badcamp_sponsors/badcamp_sponsors.module` — the two hooks above
+   (+ `EntityFormInterface` / `FormStateInterface` imports).
+2. `web/modules/custom/badcamp_sponsors/config/install/core.entity_form_display.node.coupon.default.yml`
+   — the shown `badcamp_sponsors_coupon_id` component.
+
+### GREEN evidence
+
+- Single file: `bash scripts/run-tests.sh web/.../CouponCrudTest.php` → `OK (3 tests, 30 assertions)`, exit 0.
+- **Full suite: `bash scripts/run-tests.sh` → `OK (41 tests, 402 assertions)`, exit 0** —
+  the spec-audit target count (41), assertions 396→402 (the new test now completes its set).
+
+### phpcs result
+
+- Production paths (`.module` + `config/` + `src/`), via
+  `ddev exec --dir <worktree> vendor/bin/phpcs --standard=Drupal,DrupalPractice …`:
+  **0 errors, 0 warnings, exit 0**.
+- Whole-module run reports 2 errors **in T's test file** (`CouponCrudTest.php` doc-comment
+  short descriptions at lines 16 and 142 — T's new comments from the RED phase). Test files are
+  T's; I did not touch them. T, please wrap those doc comments.
+
+### Unsaved-form behavior (guarded, per contract)
+
+`$node->isNew()` returns early in the form alter, so the element is **not added at all** on the
+create form — stronger than adding it hidden. Core's `processForm()` would also `#access = FALSE`
+any un-shown extra field, but the guard means the new-coupon form never sees the element before
+first save ("shown on the edit form once saved").

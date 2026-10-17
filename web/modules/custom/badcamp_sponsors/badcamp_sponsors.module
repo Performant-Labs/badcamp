@@ -11,7 +11,9 @@ use Drupal\badcamp_sponsors\CouponCodeNormalizer;
 use Drupal\badcamp_sponsors\CouponTitleBuilder;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\NodeInterface;
@@ -98,6 +100,49 @@ function badcamp_sponsors_entity_type_alter(array &$entity_types): void {
     $entity_types['node']->addConstraint('CouponCodeUnique');
     $entity_types['node']->addConstraint('CouponRedeemedDate');
   }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ *
+ * Declares the read-only Coupon ID pseudo-field on the coupon node form so
+ * the form display can place it like any other component. The element's
+ * value is supplied by badcamp_sponsors_form_node_form_alter().
+ */
+function badcamp_sponsors_entity_extra_field_info(): array {
+  $extra['node']['coupon']['form']['badcamp_sponsors_coupon_id'] = [
+    'label' => t('Coupon ID'),
+    'description' => t('The ID of the saved coupon, shown read-only on the edit form.'),
+    'weight' => 0,
+  ];
+
+  return $extra;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for 'node_form'.
+ *
+ * Shows the Coupon ID on the coupon edit form once the coupon has been
+ * saved. The hook fires for every node form, so it is scoped to the coupon
+ * bundle in code, and a new coupon has no ID yet, so the element is skipped
+ * entirely until first save. An 'item' element takes no editor input
+ * (#input FALSE), so the ID can never be edited through the form.
+ */
+function badcamp_sponsors_form_node_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof EntityFormInterface) {
+    return;
+  }
+  $node = $form_object->getEntity();
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'coupon' || $node->isNew()) {
+    return;
+  }
+
+  $form['badcamp_sponsors_coupon_id'] = [
+    '#type' => 'item',
+    '#title' => t('Coupon ID'),
+    '#markup' => (string) $node->id(),
+  ];
 }
 
 /**
