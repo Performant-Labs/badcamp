@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coupon_date_issued
+    - node.type.coupon
+  enforced:
+    module:
+      - badcamp_sponsors
+id: node.coupon.field_coupon_date_issued
+field_name: field_coupon_date_issued
+entity_type: node
+bundle: coupon
+label: 'Date issued'
+description: 'Defaults to the moment the coupon is created.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime

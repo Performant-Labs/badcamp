@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - badcamp_sponsors
+type: sponsor
+name: Sponsor
+description: 'A conference sponsor.'
+help: null
+new_revision: true
+preview_mode: 0
+display_submitted: false

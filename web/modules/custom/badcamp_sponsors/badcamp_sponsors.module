@@ -1,0 +1,199 @@
+<?php
+
+/**
+ * @file
+ * Sponsors, campaigns and the coupons issued to sponsors for campaigns.
+ */
+
+declare(strict_types=1);
+
+use Drupal\badcamp_sponsors\CouponCodeNormalizer;
+use Drupal\badcamp_sponsors\CouponTitleBuilder;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Entity\EntityFormInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\node\NodeInterface;
+use Drupal\pathauto\PathautoState;
+
+/**
+ * Implements hook_ENTITY_TYPE_access() for node.
+ *
+ * Two referential rules stand in for database-level foreign keys:
+ * - Deleting a sponsor or campaign that coupons still reference (including
+ *   coupons sitting in trash) is forbidden. The hook never grants access:
+ *   permission holders keep receiving their allow from node module's own
+ *   grant handling, and users with 'bypass node access' bypass the block,
+ *   which is the platform behaviour of this seam.
+ * - Viewing a coupon requires the 'view coupon content' permission. With the
+ *   permission the hook stays neutral so core grants the view of published
+ *   coupons as usual.
+ *
+ * Every other bundle and operation gets no opinion, so sponsors and campaigns
+ * stay viewable by ordinary users.
+ */
+function badcamp_sponsors_node_access(NodeInterface $entity, string $operation, AccountInterface $account): AccessResultInterface {
+  $bundle = $entity->bundle();
+
+  if ($bundle === 'coupon' && $operation === 'view') {
+    if ($account->hasPermission('view coupon content')) {
+      return AccessResult::neutral()->cachePerPermissions();
+    }
+    return AccessResult::forbidden()->cachePerPermissions();
+  }
+
+  if (in_array($bundle, ['sponsor', 'campaign'], TRUE) && $operation === 'delete') {
+    /** @var \Drupal\badcamp_sponsors\CouponCounter $counter */
+    $counter = \Drupal::service('badcamp_sponsors.coupon_counter');
+    $count = $bundle === 'sponsor'
+      ? $counter->countBySponsor($entity)
+      : $counter->countByCampaign($entity);
+    if ($count > 0) {
+      return AccessResult::forbidden()
+        ->setReason(sprintf('This %s is referenced by %d coupon(s), including coupons in trash.', $bundle, $count))
+        ->addCacheTags(['node_list:coupon']);
+    }
+    return AccessResult::neutral()->addCacheTags(['node_list:coupon']);
+  }
+
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Prepares coupons before they are stored: the code is stored trimmed, the
+ * date issued defaults to now, the title is generated from the trimmed
+ * code plus the sponsor and campaign names, and the path field is marked
+ * to skip pathauto so no pattern - not even a site-wide catch-all - can
+ * give a coupon an alias.
+ */
+function badcamp_sponsors_entity_presave(EntityInterface $entity): void {
+  if (!$entity instanceof NodeInterface || $entity->bundle() !== 'coupon') {
+    return;
+  }
+
+  $code = (string) ($entity->get('field_coupon_code')->value ?? '');
+  $entity->set('field_coupon_code', CouponCodeNormalizer::normalize($code));
+
+  if ($entity->get('field_coupon_date_issued')->isEmpty()) {
+    $entity->set('field_coupon_date_issued', gmdate(DateTimeItemInterface::DATETIME_STORAGE_FORMAT));
+  }
+
+  $sponsor = $entity->get('field_coupon_sponsor')->entity;
+  $campaign = $entity->get('field_coupon_campaign')->entity;
+  $entity->setTitle(CouponTitleBuilder::build(
+    (string) ($entity->get('field_coupon_code')->value ?? ''),
+    (string) ($sponsor?->getTitle() ?? ''),
+    (string) ($campaign?->getTitle() ?? '')
+  ));
+
+  // Coupons are private and stay at /node/<nid>: marking the path field
+  // SKIP makes pathauto's generator ignore whatever pattern matches the
+  // node, and the state is persisted so later editor saves and bulk
+  // updates skip too.
+  $entity->path->pathauto = PathautoState::SKIP;
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Attaches the module's entity-level validation constraints to nodes. Both
+ * validators are no-ops for bundles other than 'coupon'.
+ */
+function badcamp_sponsors_entity_type_alter(array &$entity_types): void {
+  if (isset($entity_types['node'])) {
+    $entity_types['node']->addConstraint('CouponCodeUnique');
+    $entity_types['node']->addConstraint('CouponRedeemedDate');
+  }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ *
+ * Declares the read-only Coupon ID pseudo-field on the coupon node form so
+ * the form display can place it like any other component. The element's
+ * value is supplied by badcamp_sponsors_form_node_form_alter().
+ */
+function badcamp_sponsors_entity_extra_field_info(): array {
+  $extra['node']['coupon']['form']['badcamp_sponsors_coupon_id'] = [
+    'label' => t('Coupon ID'),
+    'description' => t('The ID of the saved coupon, shown read-only on the edit form.'),
+    'weight' => 0,
+  ];
+
+  return $extra;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for 'node_form'.
+ *
+ * Shows the Coupon ID on the coupon edit form once the coupon has been
+ * saved. The hook fires for every node form, so it is scoped to the coupon
+ * bundle in code, and a new coupon has no ID yet, so the element is skipped
+ * entirely until first save. An 'item' element takes no editor input
+ * (#input FALSE), so the ID can never be edited through the form.
+ */
+function badcamp_sponsors_form_node_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof EntityFormInterface) {
+    return;
+  }
+  $node = $form_object->getEntity();
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'coupon' || $node->isNew()) {
+    return;
+  }
+
+  $form['badcamp_sponsors_coupon_id'] = [
+    '#type' => 'item',
+    '#title' => t('Coupon ID'),
+    '#markup' => (string) $node->id(),
+  ];
+}
+
+/**
+ * Implements hook_module_preuninstall().
+ *
+ * Before the module's configuration is removed, deletes every sponsor,
+ * campaign and coupon node - including any sitting in trash - together with
+ * their path aliases (removed with the nodes by the path_alias module), so
+ * the field tables really drop when the field storages are uninstalled.
+ *
+ * The deletion runs inside trash context 'ignore' so that delete()
+ * hard-deletes instead of soft-deleting; trash is only a soft dependency, so
+ * the context is used solely when the service exists. The sitemap bundle
+ * settings are simple config and do not depend on the module, so they are
+ * removed here as well.
+ */
+function badcamp_sponsors_module_preuninstall(string $module, bool $is_syncing): void {
+  if ($module !== 'badcamp_sponsors') {
+    return;
+  }
+
+  $purge = static function (): void {
+    $storage = \Drupal::entityTypeManager()->getStorage('node');
+    $nids = $storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', ['sponsor', 'campaign', 'coupon'], 'IN')
+      ->execute();
+    foreach (array_chunk($nids, 50, TRUE) as $chunk) {
+      $storage->delete($storage->loadMultiple($chunk));
+    }
+    foreach (['sponsor', 'campaign', 'coupon'] as $bundle) {
+      \Drupal::configFactory()
+        ->getEditable('simple_sitemap.bundle_settings.default.node.' . $bundle)
+        ->delete();
+    }
+  };
+
+  if (\Drupal::hasService('Drupal\trash\TrashManagerInterface')) {
+    \Drupal::service('Drupal\trash\TrashManagerInterface')
+      ->executeInTrashContext('ignore', $purge);
+  }
+  else {
+    $purge();
+  }
+}

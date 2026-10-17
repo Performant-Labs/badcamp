@@ -1,0 +1,14 @@
+name: 'BADCAMP Sponsors'
+type: module
+description: 'Sponsors, campaigns and the coupons issued to sponsors for campaigns, with a /sponsors management section and CSV exports.'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:pathauto
+  - drupal:simple_sitemap
+  - drupal:views_data_export
+  - drupal:link
+  - drupal:datetime
+  - drupal:image
+configure: view.sponsors.page_1

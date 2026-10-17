@@ -1,0 +1,23 @@
+badcamp_sponsors.sponsor_add:
+  title: 'Add sponsor'
+  route_name: node.add
+  route_parameters:
+    node_type: sponsor
+  appears_on:
+    - view.sponsors.page_1
+
+badcamp_sponsors.campaign_add:
+  title: 'Add campaign'
+  route_name: node.add
+  route_parameters:
+    node_type: campaign
+  appears_on:
+    - view.campaigns.page_1
+
+badcamp_sponsors.coupon_add:
+  title: 'Add coupon'
+  route_name: node.add
+  route_parameters:
+    node_type: coupon
+  appears_on:
+    - view.coupons.page_1

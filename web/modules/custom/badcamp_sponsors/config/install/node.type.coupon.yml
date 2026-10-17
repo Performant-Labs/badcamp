@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - badcamp_sponsors
+type: coupon
+name: Coupon
+description: 'A coupon issued to a sponsor for a campaign. Coupons are private records.'
+help: null
+new_revision: true
+preview_mode: 0
+display_submitted: false

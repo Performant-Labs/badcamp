@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coupon_redeemed
+    - node.type.coupon
+  enforced:
+    module:
+      - badcamp_sponsors
+id: node.coupon.field_coupon_redeemed
+field_name: field_coupon_redeemed
+entity_type: node
+bundle: coupon
+label: Redeemed
+description: 'Whether this coupon has been redeemed. When checked, a redeemed date is required.'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings: {  }
+field_type: boolean

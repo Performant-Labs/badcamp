@@ -1,0 +1,20 @@
+badcamp_sponsors.sponsors:
+  title: Sponsors
+  route_name: view.sponsors.page_1
+  description: 'Manage sponsors, campaigns and coupons.'
+  parent: system.admin
+  weight: -5
+
+badcamp_sponsors.campaigns:
+  title: Campaigns
+  route_name: view.campaigns.page_1
+  description: 'Manage campaigns.'
+  parent: badcamp_sponsors.sponsors
+  weight: 1
+
+badcamp_sponsors.coupons:
+  title: Coupons
+  route_name: view.coupons.page_1
+  description: 'Manage coupons.'
+  parent: badcamp_sponsors.sponsors
+  weight: 2

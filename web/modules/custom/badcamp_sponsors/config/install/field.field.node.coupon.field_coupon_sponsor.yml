@@ -1,0 +1,31 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coupon_sponsor
+    - node.type.coupon
+    - node.type.sponsor
+  enforced:
+    module:
+      - badcamp_sponsors
+id: node.coupon.field_coupon_sponsor
+field_name: field_coupon_sponsor
+entity_type: node
+bundle: coupon
+label: Sponsor
+description: 'The sponsor this coupon was issued to.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      sponsor: sponsor
+    sort:
+      field: title
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
