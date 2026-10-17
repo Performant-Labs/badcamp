@@ -4,3 +4,9 @@ services:
     arguments:
       - '@entity_type.manager'
       - '@entity_field.manager'
+  badcamp_sponsors.delete_refusal_subscriber:
+    class: Drupal\badcamp_sponsors\EventSubscriber\DeleteRefusalSubscriber
+    arguments:
+      - '@renderer'
+    tags:
+      - { name: event_subscriber }
