@@ -274,3 +274,27 @@
 - **Hedged:** none.
 - **Evidence:** state.json (phasesCompleted, prNumber 2); PR
   https://github.com/Performant-Labs/badcamp/pull/2.
+
+## AC 9 walkthrough (post-merge, running DDEV site) — 2026-10-17
+- **Decided:** walked the merged code on badcamp.ddev.site as a Sponsorship manager
+  (walkthrough_mgr). PASSED: module enable; records created (sponsor/campaign/coupon, auto
+  title + aliases correct, coupon unaliased after the post-audit fix); /sponsors and
+  /sponsors/campaigns render their records, action links and tabs for the manager; anonymous
+  users get 403 on the section and 403-equivalent denial on coupon pages; duplicate-code and
+  delete-block (live + trashed-only) verified earlier in the run; uninstall/re-enable verified.
+  **FAILED: /sponsors/coupons renders an EMPTY page (200, no view element) for the manager,
+  and /sponsors/coupons/export.csv returns an empty body; both work only for uid1/admin.**
+- **Root cause (diagnosed to the line):** views' Permission access plugin checks a SINGLE
+  permission (`user/src/Plugin/views/access/Permission.php:89` hasPermission(options.perm)) but
+  sets the ROUTE requirement verbatim (:96), where core's checker comma-AND-splits. The coupons
+  display ships the two-permission string 'access sponsors section,view coupon content': route
+  access passes for the manager (hence 200 + tabs + action link), the display-level check fails
+  for every non-is_admin user → views renders nothing. Sponsors/campaigns views carry a single
+  permission and are unaffected. The suite missed it because no test RENDERED the view as a
+  non-admin account (Kernel tests + route checks both pass).
+- **Decided fix:** an in-module views access plugin (the platform's own extension point; core
+  ships None/Role/Permission, modules add theirs) implementing access() as the AND of the two
+  permissions and alterRouteDefinition() setting the same unspaced _permission string; display
+  config switches to it; T adds the missing render-as-non-admin regression tests.
+- **Evidence:** this journal; subrequest/bisection transcripts in the session (admin-role probe
+  renders; single-perm probes do not; minimal-role probe does not); core file:line citations.
