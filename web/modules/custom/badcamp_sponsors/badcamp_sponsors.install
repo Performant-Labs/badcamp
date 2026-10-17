@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the BADCAMP Sponsors module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\content_moderation\Plugin\WorkflowType\ContentModerationInterface;
+
+/**
+ * Implements hook_install().
+ *
+ * Site automation such as the starter site's auto_enable_moderation ECA
+ * template reacts to every newly created content type by adding it to the
+ * site's workflows, and that reaction fires inside this module's own config
+ * import - before hook_install() runs - so by the time this hook executes,
+ * the sponsor, campaign and coupon bundles may already be governed by
+ * editorial workflows and every save born draft. The issue settles that
+ * these three types never use editorial workflow and publish directly, so
+ * as the last code to run at enable time this hook removes them from every
+ * workflow covering node bundles, leaving every other governed bundle
+ * alone. The defense is opportunistic: the module declares no hard
+ * dependency on workflows or content moderation, so when they are absent
+ * there is nothing to defend against and this hook does nothing.
+ */
+function badcamp_sponsors_install(bool $is_syncing): void {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if (!$entity_type_manager->hasDefinition('workflow')) {
+    return;
+  }
+
+  /** @var \Drupal\workflows\WorkflowInterface[] $workflows */
+  $workflows = $entity_type_manager->getStorage('workflow')->loadMultiple();
+  foreach ($workflows as $workflow) {
+    $type_plugin = $workflow->getTypePlugin();
+    // Only workflow types implementing the content moderation API can
+    // govern entity bundles; any other workflow type is left untouched.
+    if (!$type_plugin instanceof ContentModerationInterface
+      || !in_array('node', $type_plugin->getEntityTypes(), TRUE)) {
+      continue;
+    }
+
+    $changed = FALSE;
+    foreach (['sponsor', 'campaign', 'coupon'] as $bundle) {
+      if ($type_plugin->appliesToEntityTypeAndBundle('node', $bundle)) {
+        $type_plugin->removeEntityTypeAndBundle('node', $bundle);
+        $changed = TRUE;
+      }
+    }
+    if ($changed) {
+      // Saving recalculates the workflow's dependencies and fires
+      // workflow_update, which clears the cached bundle information the
+      // moderation system consults for every later node save.
+      $workflow->save();
+    }
+  }
+}

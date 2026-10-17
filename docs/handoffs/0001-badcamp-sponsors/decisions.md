@@ -274,3 +274,155 @@
 - **Hedged:** none.
 - **Evidence:** state.json (phasesCompleted, prNumber 2); PR
   https://github.com/Performant-Labs/badcamp/pull/2.
+
+## AC 9 walkthrough (post-merge, running DDEV site) — 2026-10-17
+- **Decided:** walked the merged code on badcamp.ddev.site as a Sponsorship manager
+  (walkthrough_mgr). PASSED: module enable; records created (sponsor/campaign/coupon, auto
+  title + aliases correct, coupon unaliased after the post-audit fix); /sponsors and
+  /sponsors/campaigns render their records, action links and tabs for the manager; anonymous
+  users get 403 on the section and 403-equivalent denial on coupon pages; duplicate-code and
+  delete-block (live + trashed-only) verified earlier in the run; uninstall/re-enable verified.
+  **FAILED: /sponsors/coupons renders an EMPTY page (200, no view element) for the manager,
+  and /sponsors/coupons/export.csv returns an empty body; both work only for uid1/admin.**
+- **Root cause (diagnosed to the line):** views' Permission access plugin checks a SINGLE
+  permission (`user/src/Plugin/views/access/Permission.php:89` hasPermission(options.perm)) but
+  sets the ROUTE requirement verbatim (:96), where core's checker comma-AND-splits. The coupons
+  display ships the two-permission string 'access sponsors section,view coupon content': route
+  access passes for the manager (hence 200 + tabs + action link), the display-level check fails
+  for every non-is_admin user → views renders nothing. Sponsors/campaigns views carry a single
+  permission and are unaffected. The suite missed it because no test RENDERED the view as a
+  non-admin account (Kernel tests + route checks both pass).
+- **Decided fix:** an in-module views access plugin (the platform's own extension point; core
+  ships None/Role/Permission, modules add theirs) implementing access() as the AND of the two
+  permissions and alterRouteDefinition() setting the same unspaced _permission string; display
+  config switches to it; T adds the missing render-as-non-admin regression tests.
+- **Evidence:** this journal; subrequest/bisection transcripts in the session (admin-role probe
+  renders; single-perm probes do not; minimal-role probe does not); core file:line citations.
+
+## walkthrough fix: T RED (coupons view access) — 2026-10-17
+- **Decided:** authored the regression suite the walkthrough proved missing — render the view AS a
+  non-admin. New `CouponsViewRenderAccessTest` (7 Kernel tests): manager (shipped
+  sponsorship_manager role) must pass the display gate AND see `WTSAVE20` in the rendered
+  `/sponsors/coupons` build; both coupons displays must resolve to access plugin
+  `badcamp_sponsors_section_and_coupon`; denial guards (section-only, coupon-only, anonymous:
+  gate FALSE + no view element + no code leak + route FALSE); route pin (unspaced AND string);
+  over-fix guard (sponsors single-perm view still renders). Render path = the page controller's
+  exact build (`Page::buildBasicRenderable` → `#type view` element → pre-render gate at
+  Element/View.php:64 → `executeDisplay` at :81) via `account_switcher`; plain `executeDisplay`
+  bypasses display access, so it cannot reproduce the bug.
+- **Assumed:** node grants stay inert in Kernel tests (no `hook_node_grants` implementations —
+  node.module:344-349 short-circuits TRUE), so post-fix the manager's listing query returns the
+  seeded coupon; the passing sponsors-view guard already proves the element render path works for
+  a non-admin in this environment.
+- **Hedged:** no existing display-level access assertions were found to update (grep `perm` in
+  InstallTest/SectionAccessTest: all matches are ROUTE requirements or the role permission list,
+  which the fix preserves byte-exact) — the stale-by-absence display contract is newly pinned in
+  the new file instead; SectionAccessTest's route assertion is deliberately restated at the seam
+  F's plugin re-derives (documented, cheap, non-colliding). Two tests RED by design; five guards
+  green now and must remain green after F.
+- **Evidence:** `bash scripts/run-tests.sh` → `Tests: 49, Assertions: 466, Failures: 2`, exit 1 —
+  manager test fails at the display gate (`Failed asserting that false is true`, :150); plugin-pin
+  fails `-'badcamp_sponsors_section_and_coupon' +'perm'` (:181); all 42 pre-existing + 5 guard
+  tests green. phpcs clean. Details in handoff-T-green.md § "walkthrough fix: coupons view access".
+
+## walkthrough fix round 2: T RED (workflow exclusion defense) — 2026-10-17
+- **Decided:** authored the regression for the second walkthrough defect (ECA
+  `auto_enable_moderation` had added all three module bundles to the site's workflow → every save
+  born draft). New `InstallDefendsWorkflowExclusionTest` (2 Kernel tests): after install, every
+  workflow covering node bundles has sponsor/campaign/coupon removed while other governed bundles
+  (page/article, two workflows) survive exact-set; one node per bundle saved published stays
+  published and is not a moderated entity. The contamination is produced by a NEW test helper
+  module `tests/modules/badcamp_sponsors_eca_sim` (hook_node_type_insert → add the type to every
+  content_moderation workflow governing node) so it fires inside the module's own config import —
+  the exact live ECA sequence, guaranteed to precede hook_install (ModuleInstaller.php:448→:451).
+  An in-test `sim_probe` create/assert/delete dance self-validates the simulation (guards a
+  vacuous GREEN). Contract for F pinned in handoff-T-green.md § "walkthrough fix round 2":
+  `badcamp_sponsors_install()` removes the three bundles from every node-covering workflow, saving
+  only on change (the save's `workflow_update` → `clearCachedBundles()` is what refreshes bundle
+  info for the node-save test); no `hook_modules_installed` variant wanted.
+- **Assumed:** the sim's superset behavior (adds to EVERY node-covering workflow, not only
+  basic_editorial) matches the defense's scope — it must clean any covering workflow anyway; and
+  core's `entityBundleDelete` cleanup of the probe type (ContentModerationHooks:321) keeps fixtures
+  clean, verified by the probe's own removal assertion.
+- **Hedged:** two "obvious" simulations are structurally impossible in this core and were tried
+  and discarded with evidence: saving a workflow that references not-yet-existing bundles throws
+  `LogicException: Missing bundle entity` (EntityType.php:964 via calculateDependencies), and
+  pre-creating the module's own node.type config throws `PreExistingConfigException`
+  (ConfigInstaller.php:594 via ModuleInstaller.php:209) — hence the helper-module route. Suite
+  count grows 49 → 51; the two structural dead-ends cost two extra single-file runs (documented,
+  not hidden).
+- **Evidence:** single-file RED `Tests: 2, Assertions: 30, Failures: 2` (expected `['page']` vs
+  actual `['campaign','coupon','page','sponsor']` at :132; `false is true` on sponsor isPublished
+  at :206); full suite `Tests: 51, Assertions: 499, Failures: 2` — only the new file, all 49
+  pre-existing green incl. WorkflowExclusionTest (untouched, clean-site angle). phpcs 0/0 on all
+  three new files. Core citations verified on disk: ModuleInstaller.php:448/:451,
+  ContentModeration.php:149/:168/:301, ModerationHandler.php:54,
+  ContentModerationHooks.php:340/:356/:321, ModerationStateFieldItemList.php:61.
+
+## walkthrough fix round 3: T RED (coupon-count column) — 2026-10-17
+- **Decided:** authored the regression for the third walkthrough defect ("Coupons" column empty on
+  /sponsors and /sponsors/campaigns: the `badcamp_sponsors_coupon_count` field handler resolved to
+  views' `Broken` plugin because `ViewsHandlerManager::getHandler()` resolves config-referenced
+  handlers through `hook_views_data` — `ViewsHandlerManager.php:92` `$data[$field]['field']`, no
+  entry → `createInstance('broken')` at `:140` — and a Broken field's render is the inherited
+  `FieldPluginBase::render()` → `getValue()` NULL → ''). New `CouponCountColumnTest` (4 Kernel
+  tests): render BOTH listings on the page-controller path (`Page::buildBasicRenderable` → view
+  element → renderer) as the shipped `sponsorship_manager` role and assert the
+  `views-field-coupon-count` cell text — `2` for the sponsor and the campaign (seed: TWO coupons on
+  the same pair, one trash-soft-deleted — the delete-block number, not live-only 1), `0` for an
+  unreferenced sponsor; plus the resolution seam itself (`$view->field['coupon_count']` is the
+  module's `CouponCount`, not `Broken`, on both views).
+- **Assumed:** the cell-class harness anchor (`views-field-coupon-count`) derives from the
+  configured field id via `Html::cleanCssIdentifier` (`ViewsThemeHooks.php:676`, `_`→`-`) +
+  `views-view-table.html.twig`, not from the handler — so the column-presence guard holds in RED
+  and GREEN alike; verified in the RED run itself (guard passed, content missing). Trash seeding
+  reuses DeleteBlockingTest's proven bootstrap (trash.settings before module install).
+- **Hedged:** cell extraction is regex-on-class + strip_tags/trim, not byte-exact `<td>` matching,
+  so theme-wrapper drift cannot false-fail; no green guards this round because the render path
+  itself is already guarded by round-1's CouponsViewRenderAccessTest (sponsors-view render test)
+  and the counter service by DeleteBlockingTest — only the four feature assertions are new. The
+  live site was re-probed read-only (`drush php-eval` → handler class `Broken`) to confirm the test
+  env reproduces the operator's finding; no writes, no state touched.
+- **Evidence:** single-file RED `Tests: 4, Assertions: 36, Failures: 4` — `an array contains '2'`
+  (:224, :237), `an array contains '0'` (:278), and the root cause as an assertion: `Failed
+  asserting that an instance of ...Broken is not an instance of ...Broken` (:259). Full suite
+  `Tests: 55, Assertions: 553, Failures: 4` — only the new file; all 51 pre-existing green.
+  phpcs 0/0. Contract for F pinned in handoff-T-green.md § "walkthrough fix round 3":
+  `badcamp_sponsors.views.inc` → `badcamp_sponsors_views_data()` adds
+  `node_field_data.badcamp_sponsors_coupon_count` (title 'Coupons' + help, `field` =>
+  `['id' => 'badcamp_sponsors_coupon_count']`) and NOTHING else — no sort/filter/argument; the
+  `.views.inc` is auto-loaded via `views_hook_info()`'s 'views' group (views.module:162).
+
+## walkthrough fix rounds 1-3 + AC 9 completion — 2026-10-17
+- **Decided:** three defects found by the live AC 9 walkthrough, each root-caused and fixed
+  through T-RED → F → GREEN loops on branch issue-0001-sponsors-walkthrough-fix:
+  1. Coupons view rendered EMPTY for every non-admin (views' Permission access plugin checks a
+     single permission; the two-perm comma string only AND-splits at the route layer). Fix:
+     in-module views access plugin `badcamp_sponsors_section_and_coupon` (access() = AND;
+     alterRouteDefinition() = unspaced route string). Suite: +7 render-as-non-admin tests.
+  2. The starter's `auto_enable_moderation` ECA added the three types to basic_editorial at
+     install on the live site → every save born DRAFT (status forced 0, canonical 404 via the
+     site's `unpublished_404` ECA) — violating the settled no-workflow decision. Fix:
+     `badcamp_sponsors_install()` strips the three bundles from every node-covering
+     content_moderation workflow (last word after config import). T's helper module
+     `badcamp_sponsors_eca_sim` reproduces the ECA inside config import. Suite: +2 tests.
+  3. Sponsors/campaigns "Coupons" count column rendered empty everywhere: the config-referenced
+     field handler resolved to Broken because the module shipped no views data for
+     (node_field_data, badcamp_sponsors_coupon_count). Fix: badcamp_sponsors.views.inc. Suite:
+     +4 render-level tests (count incl. trashed, zero-case, handler resolution).
+- **AC 9 result: PASS on the running DDEV site** as a Sponsorship manager (walkthrough_mgr):
+  enable; add sponsor/campaign/coupon (auto title `LIVE30 — Live Sponsor / Live Campaign`,
+  aliases /sponsor/live-sponsor + /campaign/live-campaign, coupon unaliased); /sponsors,
+  /sponsors/campaigns, /sponsors/coupons render rows + count '1' + tabs + action links; all
+  three CSVs return text/csv with header+rows and the filter respects the query (title=Live
+  Sponsor → one row); delete-sponsor refused (403; count surfaces in the access reason at API
+  level — the rendered 403 page shows generic text; advisory recorded below); anonymous 403 on
+  section and coupon pages; `pmu` leaves 0 nodes/config/field tables/aliases,
+  views_data_export stays on; re-enable works (site left enabled, no records).
+- **Assumed:** none.
+- **Hedged:** advisory — the delete-block coupon COUNT is in the AccessResult reason (tested)
+  but Drupal's 403 page does not render reasons, so editors see a generic refusal; a themed 403
+  or form-level message would be a small follow-up. Also noted: uninstall strips the shipped
+  role from users (expected platform behavior — re-grant after re-enable).
+- **Evidence:** live transcripts (curl + drush) in the session log; suite OK (55 tests, 556
+  assertions) exit 0; phpcs 0/0; handoff-T-green.md/handoff-F.md rounds 1-3 sections.

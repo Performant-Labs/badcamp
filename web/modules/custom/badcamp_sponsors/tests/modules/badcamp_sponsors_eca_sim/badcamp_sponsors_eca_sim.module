@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Test helper mimicking the starter site's auto_enable_moderation ECA
+ * template.
+ */
+
+declare(strict_types=1);
+
+use Drupal\node\NodeTypeInterface;
+use Drupal\workflows\Entity\Workflow;
+
+/**
+ * Implements hook_node_type_insert().
+ *
+ * On the live site the ECA template reacts to every new content type by
+ * adding it to the basic_editorial workflow. The reaction fires inside the
+ * module's own config import, before hook_install() runs. This hook is the
+ * native equivalent: any newly created node type joins EVERY content
+ * moderation workflow that governs node bundles, so a test install of
+ * badcamp_sponsors lands in the same contaminated state the walkthrough
+ * found on the running site.
+ */
+function badcamp_sponsors_eca_sim_node_type_insert(NodeTypeInterface $node_type): void {
+  foreach (Workflow::loadMultipleByType('content_moderation') as $workflow) {
+    $type_plugin = $workflow->getTypePlugin();
+    if (in_array('node', $type_plugin->getEntityTypes(), TRUE)) {
+      $type_plugin->addEntityTypeAndBundle('node', $node_type->id());
+      $workflow->save();
+    }
+  }
+}

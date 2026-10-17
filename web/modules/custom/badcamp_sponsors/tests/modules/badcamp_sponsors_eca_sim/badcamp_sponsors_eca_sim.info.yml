@@ -1,0 +1,9 @@
+name: 'BADCAMP Sponsors ECA simulation'
+type: module
+description: 'Test helper that mimics the starter site''s auto_enable_moderation ECA template: every newly created node type is added to every content moderation workflow.'
+package: Testing
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:workflows
+  - drupal:content_moderation
