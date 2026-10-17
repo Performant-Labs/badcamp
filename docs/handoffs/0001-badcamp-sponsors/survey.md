@@ -35,13 +35,13 @@ Surveyed 2026-10-16 by O. All facts verified against the working tree or the run
 | Listing views with pager/tabs/exposed filters | Core `views.view.content` (`web/core/modules/node/config/optional/views.view.content.yml`); pathauto's shipped views | NEW three views; mirror core's display/field/plugin structure rather than inventing YAML |
 | CSV display | `views_data_export` (to be required, `^1.10`, pulls `csv_serialization`) | NEW data-export display per view at `<path>/export.csv`; dependency declared in `.info.yml` |
 | Uniqueness / redeemed-date rules | Entity Validation constraint plugins (`Drupal\Core\Validation\Annotation\ValidationConstraint`) | NEW constraints in `src/Plugin/Validation/Constraint`, pure logic in `src/` plain classes → Unit-testable |
-| Delete blocking + coupon privacy | `hook_node_access()` (`web/core/modules/node/node.api.php`) | NEW hook impl; counting must be Trash-aware (trash 3.x soft-deletes via entity tables, so count with a storage query that includes trashed entities) |
+| Delete blocking + coupon privacy | `hook_ENTITY_TYPE_access()` for node (returns `AccessResultInterface`; invoked at `EntityAccessControlHandler.php:100-101`, reference `web/core/modules/node/src/Hook/NodeEntityHooks.php:119`) | NEW hook impl; counting is Trash-aware: two storage queries split on the `deleted` base field (live + `exists('deleted')`), summed — trash only filters queries with no explicit `deleted` condition (`TrashEntityHooks.php:86-88`) |
 | Title auto-generation | `hook_entity_presave()` | NEW hook; plain title-builder class → Unit-testable |
-| Aliases | pathauto `pathauto.pattern.*` config (contrib shapes on disk) | NEW two patterns; coupon deliberately gets none |
-| Sitemap exclusion | `simple_sitemap.bundle_settings.node.*` config | NEW settings setting index to false for the three types |
+| Aliases | pathauto `pathauto.pattern.*` config (shape from `pathauto.src/Entity/Pattern.php` + its schema — contrib ships no example pattern files on disk) | NEW two patterns; coupon deliberately gets none |
+| Sitemap exclusion | `simple_sitemap.bundle_settings.<variant>.<entity_type>.<bundle>` config (4.x names carry the variant segment, `EntityManager.php:229,310`) | NEW `...bundle_settings.default.node.<bundle>` settings (F confirms variant from `simple_sitemap.sitemap.*`), index false for the three types |
 | Workflow exclusion | `basic_editorial` workflow config governs `page` only | Do not touch it; Kernel test asserts the types are never added |
 | Role + menu | `user.role.*` config; `*.links.menu.yml` | NEW role config + module links menu plugin file (auto-removed at uninstall) |
-| Uninstall cleanup | `hook_module_preuninstall()` | NEW hook: batch-delete all sponsor/campaign/coupon nodes (incl. trashed) before config goes |
+| Uninstall cleanup | `hook_module_preuninstall()` (`module.api.php:280`) | NEW hook: batch-delete all sponsor/campaign/coupon nodes (incl. trashed) before config goes, **inside trash-context `ignore`** (`TrashManager.php:126-161`) so deletes are hard and field tables really drop |
 
 Extend-vs-new verdict: **new module** (nothing in-repo to extend), but **reuse** every platform
 mechanism above instead of parallel implementations. **No `hook_schema()`** and **no DB foreign

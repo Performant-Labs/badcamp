@@ -72,6 +72,29 @@ field, excluded from simple_sitemap (bundle settings, Kernel); the three types a
 `basic_editorial` (Kernel); `sponsorship_manager` role permissions and admin menu links (Kernel,
 config assertions).
 
+## Plan amendments after A's review (handoff-A.md findings 1-5, all warn)
+
+1. **Access seam:** implement `hook_ENTITY_TYPE_access()` for node (hook string `node_access`) /
+   `hook_entity_access()`, returning `AccessResultInterface` — the legacy tri-state
+   `hook_node_access()` + `NODE_ACCESS_*` constants no longer exist in core 11.4. Reference:
+   `web/core/modules/node/src/Hook/NodeEntityHooks.php:119`. Inherent platform behavior: users
+   with `bypass node access` (admins) bypass the delete block — accepted, it is the issue's
+   chosen mechanism.
+2. **Sitemap exclusion config shape:** `simple_sitemap.bundle_settings.default.node.<bundle>.yml`
+   — simple_sitemap 4.x names include the variant segment (`EntityManager.php:229,310`); F
+   confirms the variant key from the site's `simple_sitemap.sitemap.*` config.
+3. **`.info.yml` dependencies:** `node`, `pathauto`, `simple_sitemap`, `views_data_export` (the
+   module ships their config in `config/install`). **trash stays a soft dependency**: not in
+   `.info.yml`; trash-aware code branches on the `trash` service / `deleted` base field existing,
+   and degrades to live-only counting when trash is absent.
+4. **Uninstall ordering (trash-aware):** `hook_module_preuninstall()` runs the node deletion
+   inside trash-context `ignore` (`\Drupal::service('trash')->setTrashContext('ignore')` or its
+   scoped wrapper, `TrashManager.php:126-161`) so `delete()` hard-deletes and the field tables
+   really drop at config uninstall — never `db_drop_table()`.
+5. **Trash-aware coupon counting:** two entity/storage queries split on the `deleted` base field
+   — live + `exists('deleted')` — summed (trash only filters queries lacking an explicit
+   `deleted` condition, `TrashEntityHooks.php:86-88`); no raw SQL joins.
+
 ## Files
 
 - Production: `web/modules/custom/badcamp_sponsors/**` (info/links/services files, `src/`,

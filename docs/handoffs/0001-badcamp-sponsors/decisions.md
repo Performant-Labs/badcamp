@@ -26,3 +26,19 @@
 - **Evidence:** `survey.md` (site shape verified via `ddev drush pm-list`, `php-eval` queries);
   `web/core/lib/Drupal/Core/Extension/module.api.php:280` for `hook_module_preuninstall`;
   `git status` clean on main after install.
+
+## architecture-review — 2026-10-16 (A up-front plan review)
+- **Decided:** A returned **PASS** (0 block, 5 warn). Amended the brief + survey per the warns:
+  (1) access seam is `hook_ENTITY_TYPE_access` (node) returning `AccessResultInterface` — the
+  tri-state `hook_node_access` no longer exists in 11.4; (2) sitemap config names carry the 4.x
+  variant segment (`...bundle_settings.default.node.<bundle>`); (3) `.info.yml` deps =
+  node, pathauto, simple_sitemap, views_data_export, with **trash deliberately soft** (branch on
+  service/base-field existence, degrade to live-only counting); (4) preuninstall deletes inside
+  trash-context `ignore` so deletes are hard and field tables drop without raw DDL;
+  (5) coupon counting = two storage queries split on the `deleted` base field, summed.
+- **Assumed:** the site's default sitemap variant is `default` (A verified the naming rule; F
+  confirms the variant key from `simple_sitemap.sitemap.*` before shipping the config).
+- **Hedged:** none. A's "admins bypass the delete block" note recorded as inherent platform
+  behavior of the issue's chosen mechanism, not a defect.
+- **Evidence:** `handoff-A.md` (patterns referenced with core/contrib file:line citations);
+  amended `brief.md` ("Plan amendments after A's review") and `survey.md` Reuse-map rows.
