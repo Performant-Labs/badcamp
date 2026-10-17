@@ -27,14 +27,17 @@ class UninstallTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+    // System config provides the date formats the token system needs when
+    // pathauto runs on node save; the users_data table is what user module's
+    // hook_modules_uninstalled() cleans per-module rows from.
+    $this->installConfig(['user', 'system']);
+    $this->installSchema('user', 'users_data');
     // Trash must be told about node before the node entity schema exists,
     // otherwise the 'deleted' base field is missing its column.
     $this->config('trash.settings')
       ->set('enabled_entity_types', ['node' => []])
       ->save();
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
 
     $sponsor = $this->createSponsor('Acme Corp');
     $campaign = $this->createCampaign('Fall Blast');

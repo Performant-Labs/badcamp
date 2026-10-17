@@ -27,9 +27,10 @@ class CouponCrudTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+    // System config provides the date formats the token system needs when
+    // pathauto runs on node save.
+    $this->installConfig(['user', 'system']);
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
   }
 
   /**

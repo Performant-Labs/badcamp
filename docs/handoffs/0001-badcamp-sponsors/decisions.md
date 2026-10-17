@@ -68,3 +68,31 @@
   assertion lines; Kernel errors are `MissingDependencyException: Unable to install modules
   badcamp_sponsors` from `ModuleInstaller.php:156` in `setUp()`. Full mapping in
   `handoff-T-red.md`.
+
+## t-green — 2026-10-17
+- **Decided:** F's claim confirmed — all 29 Kernel errors were test-side; six repairs (verified
+  against core/contrib source first, no contract fact weakened): (1) dropped redundant
+  `installSchema('node','node_access')` after `module_installer()->install()` in 8 Kernel tests —
+  ModuleInstaller already creates dependency schemas (ModuleInstaller.php:348→763,
+  node.install:15) and KernelTestBase::installSchema has no existence check; dropping the line
+  (vs pre-enabling `node` in `$modules`) keeps the `drush en` dependency-resolution proof
+  strongest; (2) `installConfig(['user','system'])` in the six node-saving tests (token chain →
+  DateFormatter fallback null-fatal, DateFormatter.php:97-99); (3)
+  `installSchema('user','users_data')` in UninstallTest (UserHooks::modulesUninstalled →
+  UserData::delete); (4) `get('trash')` → `get('trash.manager')` in DeleteBlockingTest (no
+  `trash` service id exists in trash.services.yml); (5) content-view type filter asserted on the
+  `default` display where core actually stores it (same 3 assertions, corrected location); (6)
+  `array_values()` in PathautoTest::getAliases so `assertSame(['/sponsor/acme-corp'], …)` asserts
+  exactly-one-alias instead of the unsatisfiable key-0. Result: `OK (40 tests, 392 assertions)`
+  exit 0, three consecutive runs. 4/4 mutation spot-checks bite (delete-block → neutral; title
+  separator — → -; preuninstall trash-ignore dropped; counter live-only), each reverted
+  byte-exact (`git checkout --`, production diff empty, suite green after).
+- **Assumed:** none material — every F claim was re-verified against on-disk core/contrib source
+  before any edit; nothing taken on F's word.
+- **Hedged:** phpcs first showed 1 error introduced by T's own new comment (lowercase start);
+  fixed immediately, final 0/0. UninstallTest's same-shaped `getAliases` helper left as-is (only
+  key-insensitive `assertNotEmpty` uses it) — noted in the handoff for future asserters.
+- **Evidence:** `handoff-T-green.md` (full repair table with file:line citations, mutation
+  transcripts, cross-checks: composer.lock `views_data_export 1.10.0` + `csv_serialization
+  4.0.1`, phpcs 0/0); suite output above; `git status` shows only the 8 test files + handoffs
+  modified, nothing committed.

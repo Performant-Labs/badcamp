@@ -31,8 +31,9 @@ class InstallTest extends KernelTestBase {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installConfig(['user']);
+    // Installing the module creates the dependency schemas (node_access
+    // included) through the module installer, exactly like `drush en`.
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
   }
 
   /**
@@ -253,7 +254,10 @@ class InstallTest extends KernelTestBase {
     // imported because views is enabled while node is installed.
     $content = View::load('content');
     $this->assertNotNull($content, 'The core content view exists.');
-    $filters = $content->get('display')['page_1']['display_options']['filters'] ?? [];
+    // Views stores shared options on the default display; page_1 inherits
+    // them at runtime. Core's shipped content view defines the type filter
+    // on the default display only.
+    $filters = $content->get('display')['default']['display_options']['filters'] ?? [];
     $type_filter = $filters['type'] ?? NULL;
     $this->assertNotNull($type_filter, 'The content view exposes a type filter.');
     $this->assertSame('bundle', $type_filter['plugin_id']);

@@ -31,9 +31,10 @@ class CouponAccessTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+    // System config provides the date formats the token system needs when
+    // pathauto runs on node save.
+    $this->installConfig(['user', 'system']);
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
     // User 1 bypasses node access; create it first so every account
     // the assertions is a regular user.
     $this->drupalCreateUser();

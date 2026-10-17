@@ -35,14 +35,15 @@ class DeleteBlockingTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+    // System config provides the date formats the token system needs when
+    // pathauto runs on node save.
+    $this->installConfig(['user', 'system']);
     // Trash must be told about node before the node entity schema exists,
     // otherwise the 'deleted' base field is missing its column.
     $this->config('trash.settings')
       ->set('enabled_entity_types', ['node' => []])
       ->save();
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
     // User 1 bypasses node access; create it first so every account
     // the assertions is a regular user.
     $this->drupalCreateUser();
@@ -94,7 +95,9 @@ class DeleteBlockingTest extends KernelTestBase {
    * Hard-deletes a node even though trash is enabled for node.
    */
   protected function hardDelete(NodeInterface $node): void {
-    $this->container->get('trash')->executeInTrashContext(
+    // Trash 3.x exposes the manager as 'trash.manager' (plus its interface
+    // alias); there is no 'trash' service id.
+    $this->container->get('trash.manager')->executeInTrashContext(
       'ignore',
       static function () use ($node): void {
         $node->delete();

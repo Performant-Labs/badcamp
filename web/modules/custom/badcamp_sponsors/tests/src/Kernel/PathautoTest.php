@@ -26,9 +26,10 @@ class PathautoTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(['user']);
+    // System config provides the date formats the token system needs when
+    // pathauto builds [node:title] aliases on node save.
+    $this->installConfig(['user', 'system']);
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
   }
 
   /**
@@ -83,10 +84,10 @@ class PathautoTest extends KernelTestBase {
     $aliases = $this->container->get('entity_type.manager')
       ->getStorage('path_alias')
       ->loadByProperties(['path' => $path]);
-    return array_map(
+    return array_values(array_map(
       static fn($alias): string => $alias->getAlias(),
       $aliases
-    );
+    ));
   }
 
   /**

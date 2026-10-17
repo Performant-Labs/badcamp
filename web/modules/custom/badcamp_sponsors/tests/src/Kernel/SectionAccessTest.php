@@ -31,7 +31,6 @@ class SectionAccessTest extends KernelTestBase {
     $this->installEntitySchema('user');
     $this->installConfig(['user']);
     $this->container->get('module_installer')->install(['badcamp_sponsors']);
-    $this->installSchema('node', 'node_access');
     $this->container->get('router.builder')->rebuild();
     // User 1 bypasses node access; create it first so every account
     // the assertions is a regular user.
