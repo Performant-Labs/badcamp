@@ -124,3 +124,61 @@ stock platform seams named in round 1; no drive-by edits or new code appeared in
   in both handoff-F and handoff-T-green. Triage before merge — the merge-forward worktree-clean
   verification will refuse a dirty worktree regardless.
 - Proceed to spec-audit with round-1 warns 3 and 4 attached as open questions for S.
+
+## Round 3 — 2026-10-17
+
+**Diff reviewed:** `git show a491e03` (spec-audit rework; scope per O: test + module + form-display
+config + handoff docs). Commits since round-2 head `6ce742c`: `8e85953` (a-dup round-2 docs),
+`7c9ea7e` (spec-audit REWORK docs), `a491e03` — docs-only in between, so this commit is the whole
+production delta.
+**Verdict:** PASS
+
+### Summary
+
+The rework extends the platform through its stock seam; no parallel path. The mechanism is
+`hook_entity_extra_field_info()` declaring a form-context `badcamp_sponsors_coupon_id` pseudo-field
+on `node`.`coupon` + `hook_form_BASE_FORM_ID_alter` (`badcamp_sponsors_form_node_form_alter`)
+populating it — verified shape-identical on disk to contrib redirect's `url_redirects`
+(`redirect.module:226-244` declares `['node'][bundle]['form']['url_redirects']` with
+label/description/weight; `redirect_form_node_form_alter()` at `:249-254` populates under an
+`!$node->isNew()` guard). F used exactly the base-form-id variant redirect uses and that S's
+finding named first ("hook_form_NODE_FORM_alter (or a form-display extra field)" — F ships both
+halves, which is how the seam works: the info hook makes the component placeable, the alter
+supplies its content). No custom element type (`#type => 'item'` is stock Form API, `#input` FALSE —
+read-only by construction, so "never editable" needs no extra mechanism), no plugin class, no
+service, no schema stanza, and no new file under `src/` — the module gains two hook functions and
+two imports, nothing else.
+
+### Checklist (per scope)
+
+- **Extra field = stock seam:** yes. Extra-field info is the platform's canonical way to make a
+  non-field form component placeable by the form display; the form-context-only declaration (no
+  `display` key) cannot leak into view displays. No guard for `moduleExists('node')` is needed —
+  node is a hard `.info.yml` dependency of this module (verified round 1); redirect guards only
+  because it doesn't share that guarantee.
+- **Form alter scoped and guarded:** yes. Early return unless `EntityFormInterface` + `NodeInterface`
+  + `bundle() === 'coupon'` + `!isNew()` — bundle-scoped in code, saved coupons only, strictly more
+  defensive than the redirect precedent and within the same idiom. T's contract parenthetical named
+  `badcamp_sponsors_form_node_coupon_form_alter` (the FORM_ID variant) while naming the hook
+  `hook_form_NODE_FORM_alter`; F implemented the base-form variant, which the bundle guard makes
+  behaviorally identical and which is the variant redirect ships — implementation latitude under
+  the pinned behavioral contract (T's test pins element/config behavior, not the function name).
+- **Form-display config minimal:** yes. 5 lines under `content:` (weight 0, `region: content`,
+  empty `settings`/`third_party_settings`, no `type` key) — the correct widget-less extra-field
+  shape, the same shape `url_redirects` takes in exported form displays; accepted by the Kernel
+  config-schema checker on install, suite OK 41/402, phpcs 0/0 per T's GREEN section. `hidden:`
+  untouched.
+- **Nothing else crept in:** confirmed. Diff = 2 production files (`badcamp_sponsors.module` +45,
+  coupon form display +5), 1 test file (T's RED-authored Kernel test), and 3 run docs
+  (handoff-F/handoff-T-green sections + decision-journal entries). No composer change, no schema
+  addition, no service/ yiplugin/ element registrations, no edits outside the module, no second
+  visibility path (core's `EntityFormDisplay::processForm()` governs placement of the declared
+  field — F verified in-source and the test pins the shown-component config).
+
+### Findings
+
+None. There was no pre-existing ID-on-form mechanism to extend (S's finding established the
+absence, including "no hook_form_alter exists"); the rework adopted the platform's canonical seam
+for exactly this need, pattern-matched to the contrib precedent on disk, with no new mechanism
+classes to maintain. Rounds 1-2 findings and the warns routed to S are not re-litigated. The
+pre-existing `web/robots.txt` worktree residue is unchanged and still O's pre-merge triage item.

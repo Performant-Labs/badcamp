@@ -202,3 +202,70 @@ remaining delta between the diff and the issue text.
 6. **`UninstallTest::getAliases()`** still has the pre-repair key shape (`UninstallTest.php:107-115`);
    harmless (only `assertNotEmpty` uses it), already journaled by T — apply the `array_values`
    treatment if a future assertion needs exact keys.
+
+## Round 2 — 2026-10-17
+
+**Re-audited:** `git show a491e03` (fix commit: T's RED-authored test + F's implementation + form-display
+config) in full; handoff-T-green.md "spec-audit rework: edit-form Coupon ID" (RED 41/1 → GREEN) and
+"Rework GREEN" lines; decisions.md rework RED/GREEN entries; handoff-A-dup.md Round 3
+(`**Verdict:** PASS`, :134 — no parallel mechanism, stock extra-field seam, redirect-precedent pattern).
+HEAD = a491e03; the only worktree changes are the appended a-dup round-3 journal and the known
+`web/robots.txt` residue (advisory 5 stands). Preconditions re-confirmed: A PASS (up-front + a-dup r2/r3),
+T GREEN ("Blocking issues: None"; suite `OK (41 tests, 402 assertions)` exit 0; phpcs 21/21 files 0/0).
+
+### Round-1 finding 1 — closed
+
+Issue text: "Coupon ID: the node ID (nid). Shown in lists and on the edit form once saved; never editable."
+
+- **Lists — unchanged.** `git diff 8e85953..HEAD --stat` over `src/` and the three `views.view.*.yml` is
+  empty; round-1 evidence (coupons view first column `nid` labeled 'Coupon ID', `views.view.coupons.yml:28-38`)
+  stands verbatim.
+- **Edit form once saved — now satisfied.** Extra field `badcamp_sponsors_coupon_id` declared form-context
+  only (`$extra['node']['coupon']['form']`, `.module:113` — no `display` key, so it cannot leak into view
+  displays); shipped as a **shown** component of `node.coupon.default` (config on disk
+  `core.entity_form_display.node.coupon.default.yml:22-26`: `weight: 0`, `region: content`, not in `hidden`).
+  `badcamp_sponsors_form_node_form_alter()` populates it only for saved coupons — early return unless
+  `EntityFormInterface` + `NodeInterface` + `bundle() === 'coupon'` + `!isNew()` (`.module:133-138`) — as
+  `#type => 'item'`, `#title => 'Coupon ID'`, `#markup => (string) $node->id()` (`.module:141-145`).
+  **Never editable — verified in code:** `item` is core's display-only element (its own docblock:
+  "display-only form element… this is a read-only field", `Item.php:7-12`); it renders no editor control
+  (themed `#markup`, no input widget in the DOM); the component is widget-less (extra field, nothing maps
+  it onto the node); and nid is immutable on entity save. Verified on disk, not from the handoffs.
+- **Tested.** `CouponCrudTest::testCouponIdShownReadOnlyOnEditForm` builds the real form via
+  `entity.form_builder->getForm($coupon, 'default')`, then asserts element presence, `#type === 'item'`
+  (the read-only mechanism — exactly the assertion round 1 prescribed), `#title`, `#markup` containing the
+  saved nid, and the shown-component config contract (present in `content`, absent from `hidden`).
+  RED failed for the right reason (key-absent at `CouponCrudTest.php:161`, 24 assertions ran, file's other
+  2 tests green, full suite 41/1 = exactly the new test); GREEN per T's records: suite OK (41, 402) exit 0,
+  phpcs 0/0. Test-quality rubric: one behavior, cheapest sufficient tier (Kernel entity-form build, no
+  browser, honoring the no-Functional rule), fails-for-the-right-reason proven by RED, proportionate
+  (one method guarding one finding). Round 1's "PASS except Verdict item 1" in the UI/UX row and the
+  Scope check's "one item unimplemented" are both resolved by this section.
+
+### No new spec damage
+
+- The commit's production delta is exactly round 1's prescribed smallest platform-native fix: 2 hooks +
+  2 imports in `.module` (+45) and the 5-line shown component in the coupon form display (+5); plus T's
+  test (+65) and 3 run docs. No composer change, no schema stanza, no service/plugin/element registration,
+  no edits outside the module. a-dup round 3 PASS confirms the stock-seam/no-parallel-mechanism reading.
+- **Round-1 rulings untouched:** ruling (a) count column (`CouponCount.php`, views config) and ruling (b)
+  live-only uniqueness (`CouponCodeUniqueConstraintValidator.php`) are byte-identical since 8e85953 (empty
+  diff over `src/` and the views YMLs, verified above). Settled decisions re-spot-checked: no `hook_schema`
+  creep (the extra field is runtime info, not storage), uninstall story unaffected (no new config entity,
+  no field table).
+
+**Verdict: PASS** — round-1 REWORK item 1 is closed by a platform-native, tested, read-only Coupon-ID
+element on the coupon edit form for saved coupons; lists unchanged; no scope creep, no new spec damage,
+and both round-1 rulings stand. Ready for O's merge decision (AC 9 post-merge walkthrough and the
+`web/robots.txt` triage remain O's, per advisories 3–5).
+
+### Round-2 advisory
+
+1. **Inaccurate parenthetical, non-blocking:** F's handoff, T's contract/test docblocks, and the module
+   comment say `item` is "`#input` FALSE". In this core version `Item.php:27` declares `'#input' => TRUE`
+   (so Form API can internally assign values when a form dynamically switches textfield↔item); the
+   element is still display-only and read-only per its own docblock and rendering, and the test pins
+   `#type`/`#markup` behavior — nothing false is asserted or behaves wrongly. If O wants the record
+   exact, a one-line comment rewording in `.module` and `CouponCrudTest.php` ("display-only/read-only,
+   no editor control" instead of "#input FALSE") can ride any future touch; it does not warrant a rework
+   cycle on its own.

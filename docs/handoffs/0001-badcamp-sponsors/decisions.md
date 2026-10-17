@@ -177,3 +177,26 @@
   0 errors / 0 warnings, exit 0; full suite `bash scripts/run-tests.sh` → OK (41 tests,
   402 assertions), exit 0; handoff-T-green.md "spec-audit rework: edit-form Coupon ID" →
   "Rework GREEN" lines.
+
+## a-dup round 3 + spec-audit round 2 — 2026-10-17
+- **Decided:** a-dup round 3 **PASS** (rework = stock extra-field seam, pattern-matched to
+  contrib redirect; no parallel path). S round 2 **PASS** — the single REWORK finding closed:
+  Coupon ID is a shown widget-less component on the coupon form display, rendered read-only for
+  saved coupons only, pinned by CouponCrudTest::testCouponIdShownReadOnlyOnEditForm. Suite
+  OK (41 tests, 402 assertions) exit 0; phpcs 21/21 files 0/0. S advisory: "#input FALSE" comment
+  phrasing is inaccurate for this core (Item.php #input TRUE) — comment-level nit only, test
+  pins no false property.
+- **Assumed:** none.
+- **Hedged:** none.
+- **Evidence:** handoff-A-dup.md `## Round 3`; handoff-S.md `## Round 2`.
+
+## merge prep — 2026-10-17
+- **Decided:** all gates green (A PASS, T RED→GREEN, a-dup PASS r3, S PASS r2, U N/A). Restored
+  the pre-existing `web/robots.txt` scaffold drift (`git restore`) so the worktree is at its
+  committed state for the merge verification; it was never part of any committed diff. Next:
+  push branch, open PR closing #1 with per-AC verification table, record prNumber on the run,
+  then run the operator's finish checks (`ddev drush cr`; issue's install/uninstall check against
+  the worktree's code). AC 9 (post-merge walkthrough) stays journal-pending — not faked.
+- **Assumed:** push access via the existing SSH remote; gh authenticated for PR creation.
+- **Hedged:** none.
+- **Evidence:** this journal; git log; suite records above.
