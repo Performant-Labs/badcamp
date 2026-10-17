@@ -371,3 +371,179 @@ Diff footprint: 1 import + 1 assignment + 2 doc/comment blocks; `git diff --stat
 Implemented against the RED contract; nothing committed. Not mine, left untouched: two untracked
 leftover files at the worktree root (`diag-check.php`, `install-check.php`, pre-dating this
 rework).
+
+
+---
+
+## walkthrough fix: coupons view access — 2026-10-17
+
+**Context:** post-merge fix loop, AC 9 defect (T-green § "walkthrough fix: coupons view access"):
+`/sponsors/coupons` rendered EMPTY (200, no view element) for every non-admin because the display's
+`perm` plugin does a single-permission lookup while only the route layer AND-splits commas.
+Implemented in the PRIMARY checkout (branch `issue-0001-sponsors-walkthrough-fix`), RED contract
+`Tests: 49, Assertions: 466, Failures: 2`. Tests untouched; nothing committed.
+
+### Mechanism
+
+An optionless in-module views access plugin, `badcamp_sponsors_section_and_coupon`, whose
+`access()` is the AND of `hasPermission('access sponsors section')` &&
+`hasPermission('view coupon content')` for the display-level render gate (the layer that failed:
+`Element/View.php:64` → `ViewExecutable::access()`), and whose `alterRouteDefinition()` re-sets the
+byte-exact UNSPACED route requirement `'access sponsors section,view coupon content'` so the route
+layer's AND-split 403 behavior is unchanged. The coupons view's default display switches
+`access.type` to the plugin; `page_1` and `data_export_1` inherit it (neither ships its own
+`access:` stanza — verified: exactly one `access:` stanza per view, on `default:`).
+
+### Files
+
+- `web/modules/custom/badcamp_sponsors/src/Plugin/views/access/SectionAndCouponAccess.php` (new) —
+  `#[ViewsAccess]` attribute (core Permission.php/None.php shape), `final` + `declare(strict_types=1)`
+  per module house style; `access()` (the AND), `alterRouteDefinition()` (unspaced `_permission`),
+  `summaryTitle()` (names both permissions); no `defineOptions()`/`optionsForm()` (optionless).
+- `web/modules/custom/badcamp_sponsors/config/install/views.view.coupons.yml` — default display
+  access stanza: `type: badcamp_sponsors_section_and_coupon`, `options: {  }` (3 lines → 2).
+- `web/modules/custom/badcamp_sponsors/config/schema/badcamp_sponsors.schema.yml` — optionless
+  `views.access.badcamp_sponsors_section_and_coupon: {type: mapping, label: …}` mirroring core's
+  `views.access.none` shape (`views/config/schema/views.access.schema.yml`).
+
+Nothing else changed: permissions.yml, .module, `user.role.sponsorship_manager.yml`, and the
+sponsors/campaigns views are untouched (git diff clean on all); grep across the module's views
+shows the only access-type change is coupons' default display (sponsors/campaigns still `perm`;
+the `type: none` lines elsewhere in the YAMLs are pagers, not access stanzas).
+
+### Deviation from the contract's phrasing (documented, empirically proven — tests arbitrated)
+
+The contract phrased `access()` as "returned as a cachePerPermissions AccessResult"
+(`AccessResult::allowedIf(...)->cachePerPermissions()`). I implemented that EXACTLY first and ran
+the new test file: the two feature tests went green but **all three denial guards failed**
+("Failed asserting that true is false", 3/7) — `ViewExecutable::access():1826` consumes the plugin
+result by TRUTHINESS and `DisplayPluginBase::access():2344` returns it verbatim (no coercion; grep
+confirms no core views access plugin returns an AccessResult and views never instanceof-checks it),
+so a `Forbidden` OBJECT is truthy and flips every denial into an allow — reintroducing the bug
+class being fixed, inverted. Final implementation follows the core precedent the contract itself
+cites for cacheability (Permission.php): `access()` returns the **bool** AND, and
+`user.permissions` cacheability is carried via `CacheableDependencyInterface`
+(`getCacheContexts() === ['user.permissions']`, `getCacheMaxAge() === Cache::PERMANENT`,
+`getCacheTags() === []`) — Permission.php:88-90 + :147-163's exact pattern. The pinned contract's
+parenthetical equated `cachePerPermissions()` with "cache contexts user.permissions, matching core
+Permission.php:154-156", which this honors; only the (untestable-through-`ViewExecutable`, and
+behavior-breaking) literal object return was dropped. A class-docblock note warns future
+maintainers not to "modernize" it back.
+
+### GREEN evidence
+
+- `bash scripts/run-tests.sh` (full suite, primary checkout session root):
+  **`OK (49 tests, 469 assertions)` — exit 0.** RED was 49/466/2 failures; the two failing tests
+  now complete their assertion sets (466 → 469), all 47 others (incl. the 5 guards T required to
+  stay green) pass. The authoritative GREEN is the plugin's suite run, not this self-check.
+
+### phpcs result
+
+- `ddev exec --dir /var/www/html vendor/bin/phpcs --standard=Drupal,DrupalPractice
+  web/modules/custom/badcamp_sponsors` (whole module incl. tests, primary checkout): **0 errors,
+  0 warnings, exit 0** (silent pass).
+
+### Status
+
+Implemented against the RED contract; tests untouched; nothing committed. Pre-existing
+do-not-commit drift (`web/robots.txt`) and the walkthrough probe files (`probe.php`,
+`role-probe.php`, untracked, not mine) left as found.
+
+## walkthrough fix round 2: workflow exclusion defense
+
+**Contract:** handoff-T-green.md § "walkthrough fix round 2: workflow exclusion defense"
+(RED: `Tests: 51, Assertions: 499, Failures: 2` — the two InstallDefendsWorkflowExclusionTest
+methods). Tests, the `badcamp_sponsors_eca_sim` helper and `.info.yml` untouched; nothing
+committed.
+
+### Mechanism
+
+New file `web/modules/custom/badcamp_sponsors/badcamp_sponsors.install` with
+`badcamp_sponsors_install(bool $is_syncing): void` (core 11 hook signature, cf.
+navigation_install / content_translation_install):
+
+- Guard `entityTypeManager->hasDefinition('workflow')` and return early when absent — the
+  module keeps NO hard dependency on workflows/content_moderation; the defense is opportunistic
+  (.info.yml unchanged).
+- Load every workflow entity; per workflow, the type plugin is only touched when it
+  `instanceof ContentModerationInterface` AND `getEntityTypes()` includes `'node'`. That
+  interface is where `getEntityTypes()` / `appliesToEntityTypeAndBundle()` /
+  `removeEntityTypeAndBundle()` actually live — core's base `WorkflowTypeInterface` has none of
+  them — so a workflow of a non-content_moderation type can never be reached or fatal (the
+  `instanceof` also evaluates FALSE safely when content_moderation's classes are absent).
+- For `sponsor`/`campaign`/`coupon` only when `appliesToEntityTypeAndBundle('node', $bundle)`
+  is TRUE: `removeEntityTypeAndBundle('node', $bundle)`; `$workflow->save()` only when at least
+  one bundle was removed. This is core's own `ContentModerationHooks::entityBundleDelete()`
+  (:321-331) check→remove→save shape, and the save fires `workflow_update` →
+  `clearCachedBundles()` (:356) — exactly what makes the post-install node saves in test 2 see
+  clean bundle info (not bypassed with raw config writes, per contract). Other governed bundles
+  and workflow states/transitions are untouched by construction.
+- `$is_syncing` is accepted but deliberately NOT a skip condition: the contamination the
+  defense removes is written during the module's own config import (types created at
+  ModuleInstaller.php:448, hook_install at :451), which happens on a config-sync enable too —
+  skipping there would re-open the hole. No test pins either behavior on `$is_syncing`.
+
+### GREEN line
+
+- `bash scripts/run-tests.sh` (full suite, primary checkout session root):
+  **`OK (51 tests, 517 assertions)` — exit 0** (two consecutive runs; the second re-verified
+  `SUITE EXIT: 0`). RED was 51/499/2 failures; the two failing methods now complete their
+  assertion sets (499 → 517), all 49 others stay green. Single-file run:
+  `OK (2 tests, 48 assertions)`. The authoritative GREEN is the plugin's T-green run, not this
+  self-check.
+
+### phpcs line
+
+- `ddev exec --dir /var/www/html vendor/bin/phpcs --standard=Drupal,DrupalPractice
+  web/modules/custom/badcamp_sponsors` (whole module incl. tests): **0 errors, 0 warnings,
+  exit 0** (silent pass).
+
+### Files
+
+- `web/modules/custom/badcamp_sponsors/badcamp_sponsors.install` (new, the only production
+  change). Tests, sim helper, `.info.yml`: untouched.
+
+## walkthrough fix round 3: coupon-count column
+
+**Date:** 2026-10-17. **Contract:** handoff-T-green.md, "walkthrough fix round 3: coupon-count
+column" (CouponCountColumnTest, 4 RED tests).
+
+### Mechanism
+
+One new production file — `web/modules/custom/badcamp_sponsors/badcamp_sponsors.views.inc` —
+nothing else. `badcamp_sponsors_views_data()` declares the single entry the shipped views
+reference but no module provided: `$data['node_field_data']['badcamp_sponsors_coupon_count']`
+with `title` `t('Coupons')`, a one-line `help`, and `'field' => ['id' =>
+'badcamp_sponsors_coupon_count']`. That id is the key the whole defect hung on: a
+config-referenced views field handler is resolved through views DATA, not plugin discovery —
+`ViewsHandlerManager::getHandler()` reads `$data['node_field_data']['badcamp_sponsors_coupon_count']['field']['id']`
+and instantiates the attribute-discovered `#[ViewsField]` plugin under that id; with no entry
+it fell through to `createInstance('broken')` and every cell rendered `''`. The plugin, service
+and view config were never wrong and stay byte-identical; the file shape follows
+`redirect_404.views.inc` (the only `.views.inc` in this tree) with the module's house
+`declare(strict_types=1)` + typed return. Auto-loaded by views' 'views' hook group
+(`$module.views.inc`) — no `.info.yml`/`.module` registration. Only the `field` key is
+declared (no sort/filter/argument): the plugin computes per rendered row (`query()` is a
+no-op), so the column is not click-sortable.
+
+### GREEN line
+
+- `bash scripts/run-tests.sh` (full suite, primary checkout session root):
+  **`OK (55 tests, 556 assertions)` — exit 0** (run twice; the second on the final bytes after
+  a quote-style phpcs fix in the help string). RED was 55/553/4 failures; the 4 failing
+  methods now complete their assertion sets (553 → 556), all 51 others stay green (incl.
+  DeleteBlockingTest — the counter service was never the defect). The authoritative GREEN is
+  the plugin's T-green run, not this self-check.
+
+### phpcs line
+
+- `ddev exec --dir /var/www/html vendor/bin/phpcs --standard=Drupal,DrupalPractice
+  web/modules/custom/badcamp_sponsors` (whole module incl. tests): **0 errors, 0 warnings,
+  exit 0** (silent pass; one earlier warning — backslash-escaped apostrophe in the `t()`
+  string — fixed by switching that string to double quotes per the sniff's own suggestion).
+
+### Files
+
+- `web/modules/custom/badcamp_sponsors/badcamp_sponsors.views.inc` (new, the only production
+  change this round). Views config, CouponCount plugin, counter service, `.module`,
+  `.info.yml`: untouched. No test edits. Not committed.

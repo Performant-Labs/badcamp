@@ -395,3 +395,281 @@ patterns stay exactly as they are.
 
 **RED state: suite `Tests: 42, Assertions: 407, Failures: 1` (exit 1) — awaiting F.**
 
+
+---
+
+## walkthrough fix: coupons view access (post-merge fix loop, AC 9 defect) — 2026-10-17
+
+**Context:** the walkthrough found `/sponsors/coupons` rendering EMPTY (200, no view element) for
+every non-admin: the display's access string `'access sponsors section,view coupon content'` is a
+single-permission lookup for views' Permission plugin (`user/src/Plugin/views/access/Permission.php:89`)
+while only the ROUTE layer AND-splits commas (`:96` sets `_permission` verbatim; core's
+`PermissionAccessCheck` splits). Route passed for managers → 200; display check failed for everyone
+→ no view element. The suite missed it because no test RENDERED the view as a non-admin. This is
+the RED suite for F's fix (operator-sanctioned fix loop; journal entry "AC 9 walkthrough").
+
+### Tests authored — `web/modules/custom/badcamp_sponsors/tests/src/Kernel/CouponsViewRenderAccessTest.php`
+
+All Kernel (the failing layer is a Drupal render/access path; a Unit tier cannot reach it), one
+shared setUp seeding sponsor + campaign + coupon `WTSAVE20`, mirroring the module's established
+bootstrap (`$modules = ['system','user']`, `module_installer` install, router rebuild, user 1
+created first so every assertion account is regular):
+
+| Test | Pins | Tier |
+| --- | --- | --- |
+| `testManagerSeesCouponCodesOnCouponsPage` | The shipped defect: display gate `$view->access('page_1', $manager)` must be TRUE and the PAGE build (page-controller path) must render `views-element-container` + `WTSAVE20` for a real user carrying the shipped `sponsorship_manager` role, via `account_switcher` | Kernel — **RED** |
+| `testCouponsDisplaysUseSectionAndCouponAccessPlugin` | Both coupons displays (`page_1` + `data_export_1`, found by plugin type) resolve to access plugin id `badcamp_sponsors_section_and_coupon` | Kernel — **RED** |
+| `testSectionOnlyUserIsDeniedOnCouponsPage` | Denial AND-leg 1: display gate FALSE, no view element, no code leak, `checkNamedRoute('view.coupons.page_1')` FALSE | Kernel — green guard (must STAY green) |
+| `testCouponOnlyUserIsDeniedOnCouponsPage` | Denial AND-leg 2 (inverse permissions): same three denials | Kernel — green guard |
+| `testAnonymousIsDeniedOnCouponsPage` | Anonymous (`AnonymousUserSession`): same denials | Kernel — green guard |
+| `testCouponsRouteRequiresUnspacedPermissionPair` | ROUTE requirement is byte-exact `'access sponsors section,view coupon content'` — the fix's `alterRouteDefinition` contract preserving 403s | Kernel — green pin (must STAY green; deliberately restates SectionAccessTest's route assertion at the seam F's plugin re-derives) |
+| `testSponsorsPageStillRendersForSectionOnlyUser` | Over-fix guard: single-perm sponsors view still renders its element + seeded sponsor for a section-only user | Kernel — green guard |
+
+The render helper `renderViewPageAs()` is the page controller's exact build:
+`router.route_provider->getRouteByName('view.<id>.page_1')` → `Page::buildBasicRenderable()` →
+`'#type' => 'view'`, `'#embed' => FALSE` → `renderer->renderRoot()` — so the element pre-render
+gate (`views/src/Element/View.php:64` `$view->access()`) that failed in production runs, and inside
+it `executeDisplay('page_1')` (`Element/View.php:81`). Plain `executeDisplay` alone does NOT
+consult display access (ViewExecutable.php:1699-1702) — rendering through the element is what
+makes this the test class that would have caught the shipped bug.
+
+### Existing assertions audited (task: update stale display-level perm assertions)
+
+Grepped `perm` across `InstallTest` / `SectionAccessTest`: every match targets the ROUTE
+(`getRouteByName(...)->getRequirement('_permission')`) or the role permission list — **no
+display-level access assertions exist to update**, and the fix keeps all of those byte-identical
+(`alterRouteDefinition` re-sets the same unspaced string). All 42 pre-existing tests untouched and
+green. The display-level plugin contract (stale by absence — part of why the bug shipped) is newly
+pinned in `testCouponsDisplaysUseSectionAndCouponAccessPlugin`.
+
+### RED evidence
+
+`bash scripts/run-tests.sh` (full suite, session root) → `Tests: 49, Assertions: 466, Failures: 2`,
+exit 1:
+
+```
+1) Drupal\Tests\badcamp_sponsors\Kernel\CouponsViewRenderAccessTest::testManagerSeesCouponCodesOnCouponsPage
+The coupons display grants access to a sponsorship manager.
+Failed asserting that false is true.                              (CouponsViewRenderAccessTest.php:150)
+
+2) ...::testCouponsDisplaysUseSectionAndCouponAccessPlugin
+The coupons page_1 display uses the section-AND-coupon access plugin.
+Failed asserting that two strings are identical.
+-'badcamp_sponsors_section_and_coupon'
++'perm'                                                          (CouponsViewRenderAccessTest.php:181)
+```
+
+Both fail on the **feature's own assertions** (the AND-grant for the manager; the plugin id), not
+setup/import errors. The passing sponsors-view guard proves the render harness renders real view
+HTML for a non-admin, so the manager test's failure is the access bug alone — valid RED. phpcs
+(`Drupal,DrupalPractice` via ddev) on the new file: 0 errors, 0 warnings.
+
+### Pinned contract for F
+
+- **Plugin id:** `badcamp_sponsors_section_and_coupon`.
+- **Class location:** `web/modules/custom/badcamp_sponsors/src/Plugin/views/access/` (attribute
+  `#[ViewsAccess(id: ...)]`, extends `AccessPluginBase`), discovered automatically from the module.
+- **`access(AccountInterface $account)`:** `AccessResult::allowedIf($account->hasPermission('access sponsors section') && $account->hasPermission('view coupon content'))` — the AND of the two permissions, `->cachePerPermissions()` (cache contexts `user.permissions`, matching core Permission.php:154-156).
+- **`alterRouteDefinition(Route $route)`:** `$route->setRequirement('_permission', 'access sponsors section,view coupon content')` — byte-exact UNSPACED string, so the route layer keeps its AND-split 403 behavior (`testCouponsRouteRequiresUnspacedPermissionPair` + SectionAccessTest pin this).
+- **Config:** the coupons view's displays must resolve to the plugin — effective access plugin id
+  `badcamp_sponsors_section_and_coupon` for BOTH `page_1` and `data_export_1` (display-level
+  `access.type` switch on the shipped config; sponsors/campaigns views stay on `perm`).
+- **Nothing else may change:** all three denial tests, the route-requirement pin, the
+  sponsors-view guard, and the 42 pre-existing tests must stay green.
+
+**RED state: suite `Tests: 49, Assertions: 466, Failures: 2` (exit 1) — awaiting F.**
+
+## walkthrough fix round 2: workflow exclusion defense — 2026-10-17
+
+**Context:** second live-found defect (operator-sanctioned fix loop; journal "AC 9 walkthrough").
+The starter site's `auto_enable_moderation` ECA template ("Enable moderation for new content types")
+adds ANY new content type to the `basic_editorial` workflow, so `drush en badcamp_sponsors` on the
+running site ended with sponsor/campaign/coupon moderated (`isModeratedEntity(node 20) === true`):
+every programmatic/form save born DRAFT (status forced 0) and canonical routes 404 via the site's
+`unpublished_404` ECA. Violates the settled "None of the three types uses the editorial workflow"
+and AC 1's "installs cleanly on this site as it is". WorkflowExclusionTest cannot see it (no ECA in
+the Kernel env — it installs against a CLEAN workflow and only proves the module adds nothing
+itself). This is the RED suite for F's install-time defense.
+
+### The reproduction problem, and its faithful solution
+
+Two plausible simulations are structurally impossible in this core:
+
+- A workflow cannot be SAVED referencing bundles that do not exist —
+  `EntityType::getBundleConfigDependency()` throws `LogicException: Missing bundle entity`
+  (EntityType.php:964, via ContentModeration::calculateDependencies():227). The live ECA never hits
+  this: it fires AFTER type creation.
+- The module's OWN default config (`node.type.sponsor` etc.) cannot pre-exist its installation —
+  `PreExistingConfigException` (ConfigInstaller.php:594 via ModuleInstaller.php:209). So the types
+  cannot be hand-created before install.
+
+The live mechanism itself is the answer: a **test helper module**
+`tests/modules/badcamp_sponsors_eca_sim/` whose `hook_node_type_insert()` adds every newly created
+node type to every content_moderation workflow governing node bundles. Enabled before
+`badcamp_sponsors`, it contaminates the workflows INSIDE the module's own config import — node
+types are created at ModuleInstaller.php:448, `hook_install()` is invoked at :451, so the
+contamination is guaranteed present at the defense point. That is byte-for-byte the live sequence
+(ECA reacting to type creation within the import), not an approximation of its end state.
+
+### Tests authored — `web/modules/custom/badcamp_sponsors/tests/src/Kernel/InstallDefendsWorkflowExclusionTest.php`
+
+Both Kernel (the contract is install-time config-entity surgery + entity-save behavior; nothing
+here is Unit-tier). Shared setUp: node/workflows/content_moderation + the sim module in `$modules`,
+user+node+content_moderation_state schemas (moderated saves write CMS rows — all 19 core moderation
+Kernel tests install it), `installConfig(['user','system'])` (token chain on pathauto saves),
+bundles page+article, and TWO CLEAN workflows: `basic_editorial` → [page], `coupon_review` →
+[article].
+
+| Test | Pins | Tier |
+| --- | --- | --- |
+| `testInstallRemovesModuleBundlesFromEveryNodeWorkflow` | After install, `basic_editorial` governs exactly `['page']` and `coupon_review` exactly `['article']` (set-compared after sort — the other governed bundles are untouched), and NO workflow in storage governs sponsor/campaign/coupon | Kernel — **RED** |
+| `testNodesSavedAsPublishedStayPublished` | The moderation hijack symptom is gone: one node per bundle saved with `status => 1` reloads published (`isPublished()` true, status value 1) and `moderation_information->isModeratedEntity()` false | Kernel — **RED** |
+
+Self-validation (guards against a vacuous GREEN if the sim module ever silently breaks):
+`assertEcaSimulationFires()` creates a throwaway `sim_probe` type, asserts BOTH workflows pick it
+up (the ECA behavior), then deletes it — core's `hook_entity_bundle_delete`
+(ContentModerationHooks:321) removes it again, leaving the fixtures clean. The failing actual
+arrays in the RED run are themselves direct evidence the sim fired.
+
+### RED evidence
+
+`bash scripts/run-tests.sh` (full suite, session root) → `Tests: 51, Assertions: 499, Failures: 2`,
+exit 1 — the 49 pre-existing tests (round-1 fix in tree) all green, WorkflowExclusionTest
+untouched and green (different angle: clean site, module adds nothing). Single-file run:
+`Tests: 2, Assertions: 30, Failures: 2`:
+
+```
+1) ...InstallDefendsWorkflowExclusionTest::testInstallRemovesModuleBundlesFromEveryNodeWorkflow
+basic_editorial still governs page and only page after install.
+Failed asserting that two arrays are identical.
+--- Expected / +++ Actual
+ Array &0 [
+-    0 => 'page',
++    0 => 'campaign',  1 => 'coupon',  2 => 'page',  3 => 'sponsor',
+ ]                                                               (InstallDefendsWorkflowExclusionTest.php:132)
+
+2) ...InstallDefendsWorkflowExclusionTest::testNodesSavedAsPublishedStayPublished
+A sponsor saved with status 1 stays published.
+Failed asserting that false is true.                            (InstallDefendsWorkflowExclusionTest.php:206)
+```
+
+Both fail on the feature's own assertions — the bundles remain in the workflow after install, and
+a published save is born draft (computed `moderation_state` → initial `draft`
+[ModerationStateFieldItemList:61 → ContentModeration::getInitialState:301] → `setUnpublished()`
+[ModerationHandler.php:54]) — not on setup/import errors. phpcs (`Drupal,DrupalPractice` via ddev)
+on the test file + both sim-module files: 0 errors, 0 warnings.
+
+### Pinned contract for F
+
+- **Where:** `badcamp_sponsors_install()` in a new `badcamp_sponsors.install` — `hook_install()`
+  is the contract (runs at module enable AFTER the config import that triggers the ECA,
+  ModuleInstaller.php:448→:451). A `hook_modules_installed` variant is explicitly NOT wanted.
+- **What:** remove `sponsor`, `campaign`, `coupon` from EVERY workflow entity whose type plugin
+  covers node bundles — not just `basic_editorial`, not just workflows whose plugin is
+  content_moderation by name (the second contaminated workflow is asserted). The plugin API is
+  `$workflow->getTypePlugin()->removeEntityTypeAndBundle('node', $bundle)` (ContentModeration.php:149).
+- **Save only when something actually changed** (a save fires `workflow_update` →
+  `clearCachedBundles()` [ContentModerationHooks:356], which is also what makes the post-install
+  node saves in test 2 see clean bundle info — do not bypass it with raw config writes).
+- **Scope:** other governed bundles must survive untouched (`['page']` / `['article']` exact
+  sets); deleting the bundles' membership must not touch workflow states/transitions.
+- **Nothing else may change:** all 49 pre-existing tests must stay green, WorkflowExclusionTest
+  verbatim.
+
+**RED state: suite `Tests: 51, Assertions: 499, Failures: 2` (exit 1) — awaiting F.**
+
+## walkthrough fix round 3: coupon-count column — 2026-10-17
+
+**Context:** third live-found defect (operator-sanctioned fix loop; journal "AC 9 walkthrough").
+The sponsors and campaigns views' "Coupons" count column rendered EMPTY: both views reference the
+field as (table `node_field_data`, field `badcamp_sponsors_coupon_count`), and a config-referenced
+views handler is resolved through **views data**, not the plugin discovery —
+`ViewsHandlerManager::getHandler()` (`views/src/Plugin/ViewsHandlerManager.php:92`) reads
+`$data[$field]['field']` from `hook_views_data` and, finding no entry, falls through to
+`createInstance('broken', ...)` (`:140`). The module ships no views data. A Broken FIELD handler
+still participates in the render (its `query()`/`ensureMyTable()` are no-ops) but its `render()` is
+the inherited `FieldPluginBase::render()` (`FieldPluginBase.php:1181`): `getValue()` on a handler
+with no real field → NULL → `''`. So the table keeps the column, the header, and an empty cell —
+which is exactly what the live page showed. The plugin itself and its counter service were never
+broken (delete-blocking uses the service; DeleteBlockingTest green throughout); the suite missed it
+because no test rendered either view.
+
+### Tests authored — `web/modules/custom/badcamp_sponsors/tests/src/Kernel/CouponCountColumnTest.php`
+
+All Kernel (the failing layers are handler resolution + a Drupal page render; nothing is Unit-tier).
+Shared setUp mirrors the module's trash-aware bootstrap (`DeleteBlockingTest`'s
+`$modules = ['system','user','trash']`, trash.settings `enabled_entity_types: [node: []]` BEFORE
+the module install so the `deleted` base field gets its column), then seeds TWO sponsors (one
+referenced, one unreferenced), ONE campaign, and TWO coupons referencing the SAME sponsor AND
+campaign — one live, one soft-deleted via `$coupon->delete()` (trash's default active context) —
+so the expected count is **2** (trash-aware, the delete-block number), not the live-only 1:
+
+| Test | Pins | Tier |
+| --- | --- | --- |
+| `testSponsorsRowShowsCouponCountIncludingTrashed` | Page-controller render (`Page::buildBasicRenderable` → `#type view` element → renderer, as the shipped `sponsorship_manager` role) of `/sponsors` contains a `views-field-coupon-count` data cell with exactly `2` | Kernel — **RED** |
+| `testCampaignsRowShowsCouponCountIncludingTrashed` | Same render of `/sponsors/campaigns`: count cell `2` (the campaigns display's `counter: campaign` option → `countByCampaign`) | Kernel — **RED** |
+| `testCouponCountHandlerResolvesToCouponCountPlugin` | The resolution seam: after `initHandlers()`, `$view->field['coupon_count']` on BOTH views is the module's `CouponCount` plugin and NOT `Drupal\views\Plugin\views\field\Broken` | Kernel — **RED** |
+| `testSponsorWithZeroCouponsRendersZeroCount` | The unreferenced sponsor's count cell renders `0` (config `empty_zero: false`), not an empty cell | Kernel — **RED** |
+
+Harness guards against a vacuous/invalid RED: `assertCountColumnPresent()` first asserts the
+`views-field-coupon-count` markup exists — the cell class derives from the configured field id
+through `Html::cleanCssIdentifier` (`ViewsThemeHooks.php:676`) + `views-view-table.html.twig`, NOT
+from the handler, so the column markup renders even while the handler is Broken. It passed in the
+RED run while the content was missing, proving the failures are the Broken handler, not a harness
+miss. `couponCountCells()` extracts cell texts with a class-anchored regex + `strip_tags`/trim, so
+theme-wrapper drift cannot false-fail the assertions.
+
+Proportionality: the CSV-export displays reference the same handler through the same
+`ViewsHandlerManager` seam the plugin-resolution test pins, so no separate export render is
+duplicated; the two renders cover both `counter` modes (`sponsor`, `campaign`).
+
+### RED evidence
+
+Single file `bash scripts/run-tests.sh web/.../CouponCountColumnTest.php` → `Tests: 4, Assertions:
+36, Failures: 4`:
+
+```
+1) ...CouponCountColumnTest::testSponsorsRowShowsCouponCountIncludingTrashed
+The sponsors view counts the live and the trashed coupon for the referencing sponsor.
+Failed asserting that an array contains '2'.                    (CouponCountColumnTest.php:224)
+
+2) ...CouponCountColumnTest::testCampaignsRowShowsCouponCountIncludingTrashed
+The campaigns view counts the live and the trashed coupon for the referencing campaign.
+Failed asserting that an array contains '2'.                    (CouponCountColumnTest.php:237)
+
+3) ...CouponCountColumnTest::testCouponCountHandlerResolvesToCouponCountPlugin
+The sponsors view resolves the coupon_count handler instead of falling back to Broken.
+Failed asserting that an instance of class Drupal\views\Plugin\views\field\Broken is not an
+instance of class Drupal\views\Plugin\views\field\Broken.       (CouponCountColumnTest.php:259)
+
+4) ...CouponCountColumnTest::testSponsorWithZeroCouponsRendersZeroCount
+A sponsor with no coupons shows a 0 count, not an empty cell.
+Failed asserting that an array contains '0'.                    (CouponCountColumnTest.php:278)
+```
+
+Failure 3 IS the root cause restated as an assertion (the handler is Broken); failures 1/2/4 fail on
+the feature's own content assertions after the column-presence guard passed. Full suite
+`bash scripts/run-tests.sh` → `Tests: 55, Assertions: 553, Failures: 4` — the 4 are exactly the new
+file; all 51 pre-existing tests green (incl. DeleteBlockingTest: the counter service was never the
+defect). Read-only cross-check on the running site:
+`ddev drush php-eval '... Views::getView("sponsors") ... initHandlers() ... get_class(...)'` →
+`Drupal\views\Plugin\views\field\Broken` — the test environment reproduces the live defect exactly.
+phpcs (`Drupal,DrupalPractice` via ddev) on the new file: 0 errors, 0 warnings.
+
+### Pinned contract for F
+
+- **File:** `web/modules/custom/badcamp_sponsors/badcamp_sponsors.views.inc` — auto-loaded when
+  views collects data because `views_hook_info()` puts `views_data` in the 'views' group
+  (`views.module:162-170`, so the module handler loads `$module.views.inc`). No `.info.yml` or
+  `.module` registration is needed; do NOT move this into `hook_views_data` in the `.module`.
+- **Function:** `badcamp_sponsors_views_data()` adding
+  `$data['node_field_data']['badcamp_sponsors_coupon_count']` with:
+  - `title` `'Coupons'` (+ a `help` string);
+  - `'field' => ['id' => 'badcamp_sponsors_coupon_count']` — the id under which the
+    attribute-discovered plugin (`#[ViewsField("badcamp_sponsors_coupon_count")]`) is created.
+- **Nothing else:** no `sort`/`filter`/`argument` entries — the plugin computes per row (`query()`
+  is a no-op) and is not click-sortable; no other tables, no `hook_views_data_alter`.
+- **Nothing else may change:** all 51 pre-existing tests stay green; the views config, the plugin
+  and the counter service stay byte-identical.
+
+**RED state: suite `Tests: 55, Assertions: 553, Failures: 4` (exit 1) — awaiting F.**

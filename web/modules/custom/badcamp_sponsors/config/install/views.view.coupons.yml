@@ -556,9 +556,8 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: perm
-        options:
-          perm: 'access sponsors section,view coupon content'
+        type: badcamp_sponsors_section_and_coupon
+        options: {  }
       cache:
         type: tag
         options: {  }

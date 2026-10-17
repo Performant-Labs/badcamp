@@ -5,3 +5,7 @@ views.field.badcamp_sponsors_coupon_count:
     counter:
       type: string
       label: 'The reference that is counted: sponsor or campaign'
+
+views.access.badcamp_sponsors_section_and_coupon:
+  type: mapping
+  label: 'Sponsors section and coupon permissions'
