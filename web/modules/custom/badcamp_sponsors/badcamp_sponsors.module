@@ -17,6 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\NodeInterface;
+use Drupal\pathauto\PathautoState;
 
 /**
  * Implements hook_ENTITY_TYPE_access() for node.
@@ -65,8 +66,10 @@ function badcamp_sponsors_node_access(NodeInterface $entity, string $operation, 
  * Implements hook_entity_presave().
  *
  * Prepares coupons before they are stored: the code is stored trimmed, the
- * date issued defaults to now, and the title is generated from the trimmed
- * code plus the sponsor and campaign names.
+ * date issued defaults to now, the title is generated from the trimmed
+ * code plus the sponsor and campaign names, and the path field is marked
+ * to skip pathauto so no pattern - not even a site-wide catch-all - can
+ * give a coupon an alias.
  */
 function badcamp_sponsors_entity_presave(EntityInterface $entity): void {
   if (!$entity instanceof NodeInterface || $entity->bundle() !== 'coupon') {
@@ -87,6 +90,12 @@ function badcamp_sponsors_entity_presave(EntityInterface $entity): void {
     (string) ($sponsor?->getTitle() ?? ''),
     (string) ($campaign?->getTitle() ?? '')
   ));
+
+  // Coupons are private and stay at /node/<nid>: marking the path field
+  // SKIP makes pathauto's generator ignore whatever pattern matches the
+  // node, and the state is persisted so later editor saves and bulk
+  // updates skip too.
+  $entity->path->pathauto = PathautoState::SKIP;
 }
 
 /**

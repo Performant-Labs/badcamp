@@ -294,3 +294,104 @@ sits naturally above it).
 - Nits fixed: the 2 phpcs doc-comment errors F flagged in `CouponCrudTest.php` (class + method short descriptions, lines ~16/~142) are now single lines ending in a period; descriptions kept accurate, no behavior or assertion changes.
 - phpcs (`Drupal,DrupalPractice` on `web/modules/custom/badcamp_sponsors`, tests included): 21/21 files clean — 0 errors, 0 warnings, exit 0.
 - Full suite: `bash scripts/run-tests.sh` → `OK (41 tests, 402 assertions)`, exit 0.
+
+## post-audit rework: coupon alias vs catch-all pattern
+
+**Date:** 2026-10-17. **Context:** operator-sanctioned rework after a live-site finish check exposed
+a spec violation the Kernel env could not see. The Drupal CMS starter site ships `menu_path`, a
+pathauto pattern with **no selection criteria** at weight 10
+(`/[node:menu-link:parents:join-path]/[node:title]`), so it matches **every** node bundle —
+including coupons. **Live evidence:** a saved coupon on the running site got the alias
+`/save20-acme-corp-fall-blast`, violating the issue's settled decision *"Coupon: no alias
+(confirmed). Coupons are private and stay at /node/<nid>"*. T authors the RED first; tests only;
+no production edits; nothing committed.
+
+### Why the original suite could not see it
+
+The Kernel tests install only what `badcamp_sponsors` ships: the two bundle-specific patterns
+(`sponsor`, `campaign`, weight 0). No pattern matches a coupon, and
+`PathautoState::getValue()` (PathautoState.php:53-57) computes **SKIP** when no pattern matches —
+so `testCouponsGetNoAlias` passed vacuously: nothing existed to alias the coupon. The live site's
+catch-all is exactly the input the fixture was missing.
+
+### New test
+
+`PathautoTest::testCatchAllPatternDoesNotAliasCoupons` — reproduces the live shape inside the
+test: `PathautoPattern::create` with `type: canonical_entities:node`, `pattern: /[node:title]`
+(simpler token string than `menu_path`, same matching surface — zero selection criteria), `weight:
+10`, `status: TRUE` (the generator filters on enabled patterns, PathautoGenerator.php:328). Then:
+
+1. **Sponsor still specifically aliased** — `['/sponsor/acme-corp']`: the bundle-specific pattern
+   (weight 0) must beat the catch-all (weight 10). Mechanism: `getPatternByEntityType()` sorts by
+   weight (:329) and `getPatternByEntity()` returns the **first** pattern that applies
+   (:347-363) — this assertion passed pre-fix and guards the fix from "solving" the problem by
+   breaking sponsor/campaign aliases.
+2. **Coupon gets NO alias at all** — `[]` against `/node/<nid>`. **This is the RED assertion**
+   today: the catch-all matches the coupon and aliases it.
+3. **Mechanism pinned (F's exact approach)** — after saving the coupon, the node's path field
+   `pathauto` property equals `PathautoState::SKIP` (in-memory) **and** the state is persisted in
+   keyvalue `pathauto_state.node` (the durable store `PathautoState::persist()` writes from
+   `PathautoItem::postSave()`, PathautoItem.php:36 — what makes later editor saves and pathauto
+   bulk updates skip too, since `updateEntityAlias` runs for `update` ops with the same check).
+
+Assertion 3 lives in the same method deliberately: **without** a matching pattern, a fresh coupon's
+`pathauto` computes SKIP anyway (no pattern matches → SKIP, PathautoState.php:56), so a standalone
+mechanism test would be green pre-fix — an invalid RED. Only under the catch-all does the state
+compute CREATE, making the SKIP pin genuinely red today and meaningfully green after the fix.
+
+### RED evidence
+
+- Single file: `bash scripts/run-tests.sh web/modules/custom/badcamp_sponsors/tests/src/Kernel/PathautoTest.php`
+  → `Tests: 3, Assertions: 17, Failures: 1`, exit 1:
+
+  ```
+  1) Drupal\Tests\badcamp_sponsors\Kernel\PathautoTest::testCatchAllPatternDoesNotAliasCoupons
+  Coupons get no alias even when a catch-all pattern matches them.
+  Failed asserting that two arrays are identical.
+  --- Expected
+  +++ Actual
+  @@ @@
+  -Array &0 []
+  +Array &0 [
+  +    0 => '/save20-acme-corp-fall-blast',
+  +]
+  ```
+
+  Fails at PathautoTest.php:178 — the **behavior** assertion, reproducing the live-site alias
+  byte-for-byte (`/save20-acme-corp-fall-blast`), not an import/setup error; the sponsor assertion
+  (specific beats catch-all) ran green before it; the file's other 2 tests stay green.
+- Full suite: `bash scripts/run-tests.sh` → `Tests: 42, Assertions: 407, Failures: 1`, exit 1 —
+  exactly the new test; **all 41 prior tests green**, no collateral damage.
+- phpcs (via ddev against the worktree, `Drupal,DrupalPractice` on the changed file): 0 errors,
+  0 warnings, exit 0.
+
+**RED is valid; F may implement against it.**
+
+### Pinned contract for F (the mechanism to implement)
+
+In the existing `badcamp_sponsors_entity_presave()` hook, for coupon-bundle nodes, set:
+
+```php
+$entity->path->pathauto = PathautoState::SKIP;
+```
+
+(with `use Drupal\pathauto\PathautoState;` in the `.module` file). This is the canonical pathauto
+seam, verified against this checkout's contrib source:
+
+- `FieldItemList::__set()` (core FieldItemList.php:127-132) auto-creates the item on an empty
+  list, and for new entities `PathautoFieldItemList::computeValue()` has already seeded `list[0]`
+  (with CREATE) — the assignment lands on a real item either way.
+- Presave runs before `pathauto_entity_insert`/`pathauto_entity_update`
+  (pathauto.module:57/65 → `PathautoEntityHooks`), so when
+  `PathautoGenerator::updateEntityAlias()` reaches **PathautoGenerator.php:393** —
+  `if ($entity->path->pathauto != PathautoState::CREATE && empty($options['force']))` — it
+  returns NULL and no alias is created, whatever pattern matches.
+- `PathautoItem::postSave()` then `persist()`s SKIP into keyvalue `pathauto_state.node`, so the
+  state survives the request: later editor saves hit the same :393 check, and bulk alias
+  updates/deletes honour the stored state. In this pathauto build `SKIP = 0`, `CREATE = 1`.
+
+Nothing else may change: sponsor/campaign aliasing (assertion 1) and the module's two shipped
+patterns stay exactly as they are.
+
+**RED state: suite `Tests: 42, Assertions: 407, Failures: 1` (exit 1) — awaiting F.**
+

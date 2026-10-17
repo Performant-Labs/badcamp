@@ -269,3 +269,74 @@ and both round-1 rulings stand. Ready for O's merge decision (AC 9 post-merge wa
    exact, a one-line comment rewording in `.module` and `CouponCrudTest.php` ("display-only/read-only,
    no editor control" instead of "#input FALSE") can ride any future touch; it does not warrant a rework
    cycle on its own.
+
+## Round 3 — 2026-10-17
+
+**Re-audited (post-audit rework, uncommitted working tree vs `1c729af`):** `git diff` in full —
+`badcamp_sponsors.module` (+12/−2, the −2 a docblock rewrap), `PathautoTest.php`
+(`testCatchAllPatternDoesNotAliasCoupons` added), decisions.md RED entry, handoff-T-green.md
+"post-audit rework: coupon alias vs catch-all pattern", handoff-F.md "post-audit rework: coupon alias
+skip"; issue body re-read via REST (`gh issue view` currently dies on a GitHub Projects-classic GraphQL
+deprecation before printing — `gh api repos/Performant-Labs/badcamp/issues/1` works). Preconditions
+re-confirmed: A PASS (up-front; a-dup round 3 PASS, committed at `1c729af`); T zero blocking issues
+(valid RED + pinned contract; GREEN attested `OK (42 tests, 409 assertions)` exit 0, phpcs 0/0 —
+407→409 is exactly the two pinned mechanism assertions now completing).
+
+### The violation and the fix
+
+The live finish check exposed what the Kernel env structurally could not: the Drupal CMS starter's
+`menu_path` pattern (no selection criteria, weight 10) matches every node bundle, and a saved coupon
+got `/save20-acme-corp-fall-blast` — violating the issue's settled text at three points ("Coupons are
+private… have no path alias", issue :52; "Coupon: **no alias** (confirmed). Coupons are private and
+stay at `/node/<nid>`", :73; AC ":102 Coupons get none"). The original `testCouponsGetNoAlias` passed
+vacuously: no fixture pattern matched a coupon, and `PathautoState::getValue()` computes SKIP when
+nothing matches.
+
+F's fix is **exactly T's pinned contract**: `$entity->path->pathauto = PathautoState::SKIP;`
+(`badcamp_sponsors.module:98`) plus the `use Drupal\pathauto\PathautoState;` import, inside the existing
+`badcamp_sponsors_entity_presave()` coupon branch — after the early return for non-coupon bundles
+(`:75-77`), so **sponsors/campaigns never reach it and their aliasing is untouched**; the module's two
+shipped patterns are byte-identical. The import is safe: `drupal:pathauto` is a hard dependency
+(`badcamp_sponsors.info.yml:6-8`), so the class exists whenever the module is enabled.
+
+**No parallel mechanism — by construction.** SKIP is pathauto's own state machine
+(`PathautoGenerator.php:393` returns without aliasing when state ≠ CREATE); the fix adds no service,
+plugin, hook, config surgery, or alias-deletion pass. It also correctly does **not** touch the
+starter's `menu_path` pattern — that is site config outside the module's ownership; the module-side
+SKIP guarantees the invariant under *any* site configuration, which is the stronger and correct
+placement. Persistence via `PathautoItem::postSave()` → keyvalue `pathauto_state.node` closes the
+recurrence hole: later editor saves and pathauto bulk updates skip too.
+
+### Test quality and no collateral damage
+
+`testCatchAllPatternDoesNotAliasCoupons` reproduces the live shape (enabled catch-all, weight 10,
+zero criteria — the actual violation surface; the simpler token string is a fair stand-in since the
+matching surface, not the tokens, is the defect). Three assertions, each guarding a distinct failure
+mode: (1) sponsor keeps `/sponsor/acme-corp` under the catch-all — specific weight-0 beats catch-all
+weight-10, the no-collateral guard that would fail if the fix broke sponsor/campaign aliasing;
+(2) coupon gets `[]` — the RED, which pre-fix reproduced the live alias **byte-for-byte** and failed
+as a behavior assertion (not setup/import error), 41 prior tests green; (3) SKIP pinned in-memory and
+persisted. The in-method placement of the mechanism assertions is sound: standalone, they would be
+vacuously green pre-fix (no matching pattern → SKIP anyway). Cheapest sufficient tier (Kernel, no
+Functional — the issue's binding testing rule), one method guarding one finding, no smells. Round-1
+rulings (a)/(b) and the round-2 edit-form fix are byte-identical since `1c729af` (diff touches only
+`.module`, the test, and docs).
+
+**Verdict: PASS** — the one-line fix satisfies the settled "Coupon: no alias (confirmed)" decision
+through pathauto's own canonical seam, damages nothing else (sponsor/campaign aliasing guarded in code
+and by test), introduces no parallel mechanism, and is locked in by a valid-RED test that reproduces
+the exact live violation. Green suite 42/409 exit 0, phpcs 0/0. Ready for O's merge decision (AC 9
+post-merge walkthrough remains O's).
+
+### Round-3 advisories
+
+1. **Stale aliases created before the fix survive it.** SKIP makes pathauto *not touch* a coupon's
+   alias; it never deletes an existing row (`PathautoGenerator.php:393` returns NULL, leaving the old
+   alias). Any coupon aliased on the running DDEV site pre-fix — the observed
+   `/save20-acme-corp-fall-blast` — keeps that alias until manually deleted. Before or during the AC 9
+   walkthrough, delete that alias (or the test coupon); new saves are covered.
+2. **Two untracked strays** (`diag-check.php`, `install-check.php`, worktree root) remain — disclosed
+   by T and F, pre-dating this rework, outside every diff. Keep them out of any commit; ideally delete
+   before merge.
+3. **Round-2 advisory 5 is closed:** `web/robots.txt` no longer appears in `git status` (restored since
+   round 2; HEAD now `1c729af`, docs-only).

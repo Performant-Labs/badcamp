@@ -327,3 +327,47 @@ visibility path.
 create form — stronger than adding it hidden. Core's `processForm()` would also `#access = FALSE`
 any un-shown extra field, but the guard means the new-coupon form never sees the element before
 first save ("shown on the edit form once saved").
+
+## post-audit rework: coupon alias skip
+
+**Date:** 2026-10-17. **Contract:** handoff-T-green.md "post-audit rework: coupon alias vs
+catch-all pattern" (`PathautoTest::testCatchAllPatternDoesNotAliasCoupons`, RED: 42 tests /
+407 assertions / 1 failure — the coupon got `/save20-acme-corp-fall-blast` under the catch-all).
+
+### The one-line change
+
+`web/modules/custom/badcamp_sponsors/badcamp_sponsors.module`, inside the existing
+`badcamp_sponsors_entity_presave()` (coupon branch only), exactly the pinned mechanism:
+
+```php
+$entity->path->pathauto = PathautoState::SKIP;
+```
+
+plus `use Drupal\pathauto\PathautoState;` in the imports. Supporting prose only: the hook's
+docblock and a 4-line comment state the invariant (coupons stay at /node/<nid>; SKIP persists, so
+editor saves and bulk updates skip too). **Nothing else changed** — sponsor/campaign aliasing and
+the module's two shipped patterns untouched (the test's assertion 1, specific-beats-catch-all,
+guards this). Dependency verified: `drupal:pathauto` is a hard dependency in
+`badcamp_sponsors.info.yml` (line 8), so the class reference is safe.
+
+Diff footprint: 1 import + 1 assignment + 2 doc/comment blocks; `git diff --stat` for the module:
+12 insertions, 2 deletions (docblock rewrap), 0 deletions of code.
+
+### GREEN evidence
+
+- `bash scripts/run-tests.sh` (full suite, worktree session root):
+  **`OK (42 tests, 409 assertions)` — exit 0.** RED was 42/407/1 failure; the previously failing
+  test now completes its assertion set (407 → 409), all 41 prior tests stay green. The
+  authoritative GREEN is the plugin's T-green run, not this self-check.
+
+### phpcs result
+
+- `ddev exec --dir /var/www/html/.claude/worktrees/0001-badcamp-sponsors vendor/bin/phpcs
+  --standard=Drupal,DrupalPractice web/modules/custom/badcamp_sponsors` (whole module incl.
+  tests): **0 errors, 0 warnings, exit 0** (silent pass).
+
+### Status
+
+Implemented against the RED contract; nothing committed. Not mine, left untouched: two untracked
+leftover files at the worktree root (`diag-check.php`, `install-check.php`, pre-dating this
+rework).

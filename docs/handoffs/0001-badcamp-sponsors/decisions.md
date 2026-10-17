@@ -200,3 +200,44 @@
 - **Assumed:** push access via the existing SSH remote; gh authenticated for PR creation.
 - **Hedged:** none.
 - **Evidence:** this journal; git log; suite records above.
+
+## post-audit rework RED — 2026-10-17
+- **Decided:** live-site finish check exposed a spec violation the Kernel env structurally could
+  not see: the starter's `menu_path` catch-all pattern (no selection criteria, weight 10) aliases
+  every node bundle — observed `/save20-acme-corp-fall-blast` on a live coupon, violating the
+  settled "Coupon: no alias (confirmed). Coupons are private and stay at /node/<nid>". T authored
+  `PathautoTest::testCatchAllPatternDoesNotAliasCoupons`, which creates the catch-all in-test
+  (enabled, weight 10, zero criteria, `canonical_entities:node`), asserts sponsors keep
+  `/sponsor/<name>` (weight-sorted first-match, PathautoGenerator.php:329/:347), asserts coupons
+  get no alias (the RED), and pins F's exact mechanism: `path->pathauto === PathautoState::SKIP`
+  in-memory AND persisted in keyvalue `pathauto_state.node`. Mechanism assertions live in the
+  same method deliberately — without a matching pattern a fresh coupon computes SKIP anyway
+  (PathautoState.php:56), so a standalone mechanism test would be green pre-fix (invalid RED).
+  Contract for F: `$entity->path->pathauto = PathautoState::SKIP` for coupon-bundle nodes in the
+  existing presave hook (PathautoGenerator.php:393 skips on state != CREATE; PathautoItem
+  postSave persists). Tests only; no production edits; nothing committed.
+- **Assumed:** the fixture pattern `/[node:title]` stands in for the live
+  `/[node:menu-link:parents:join-path]/[node:title]` — identical matching surface (zero selection
+  criteria is the violation; the token string is not), and its RED output reproduced the live
+  alias byte-for-byte.
+- **Hedged:** two stray untracked files in the worktree (`diag-check.php`, `install-check.php`,
+  not T's) were left untouched and out of every diff.
+- **Evidence:** RED single file `Tests: 3, Assertions: 17, Failures: 1` (expected `[]` vs actual
+  `['/save20-acme-corp-fall-blast']` at PathautoTest.php:178); full suite `Tests: 42,
+  Assertions: 407, Failures: 1` — only the new test, 41 prior green; phpcs on the changed file
+  0/0 via ddev; handoff-T-green.md "post-audit rework: coupon alias vs catch-all pattern".
+
+## post-audit rework (live finish check) — 2026-10-17
+- **Decided:** O's live install check on the worktree code exposed a spec violation the Kernel
+  env could not see: the starter recipe ships `menu_path`, a catch-all pathauto pattern (no
+  selection criteria, w:10), which aliased a coupon (`/save20-acme-corp-fall-blast` observed) —
+  violating the settled "Coupon: no alias". Rework loop run: T reproduced the catch-all in-test
+  (RED byte-for-byte with the live alias) and pinned the seam; F set
+  `$entity->path->pathauto = PathautoState::SKIP` in the coupon branch of presave (pathauto's
+  canonical skip, PathautoGenerator.php:393). S round 3 **PASS** (no parallel mechanism,
+  sponsor/campaign aliasing guarded). Suite OK (42 tests, 409 assertions) exit 0; phpcs 0/0.
+- **Assumed:** none.
+- **Hedged:** S advisory — pre-fix alias rows are not retroactively deleted by SKIP; the live
+  uninstall check below proves the module's preuninstall removes nodes WITH their aliases.
+- **Evidence:** handoff-T-green.md + handoff-F.md "post-audit rework" sections; handoff-S.md
+  Round 3; live observation recorded in this entry.
