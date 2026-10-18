@@ -1,0 +1,261 @@
+# A review: trial-0936-mercury-landing
+
+Reviewer: A (Architecture Reviewer), Website Front-End Pipeline. Adapter: `drupal-canvas-mercury` (unmerged worktree copy, "Layer hierarchy" and "Blast-radius gate"). Read-only review: no code, config, content or database was changed. Headless only.
+
+## Verdict: PASS (0 BLOCK, 9 WARN, 3 INFO)
+
+Every style-affecting change in the working tree has a log entry and a trace, and every layer F chose is defensible. I disagree with F's layer on none of them outright. Seven items are "defensible but suboptimal" (W1 to W7), and two more are provenance and process warnings. The seven edited Mercury components are additive for every stock enum value, with two exceptions that F logged as intended site-wide L4 changes (`button`, `badge`). The blast-radius gate has one finding, and it is pre-existing and not introduced by this cycle.
+
+## Method and baseline
+
+- Baseline for "contrib Mercury 1.0.5": `web/themes/contrib/mercury` is not in git (`/web/themes/contrib` is ignored) and Composer deleted it, so `git show HEAD:...` has nothing. I used the pristine Composer-cached package `~/Library/Caches/composer/files/drupal/mercury/8e615fe5...zip` (its `mercury.info.yml` says `version: '1.0.5'`), unzipped to a scratch dir, and ran `diff -rq` against `web/themes/custom/mercury` (excluding `node_modules`).
+- Changed files vs baseline (complete list): `src/main.css`; `components/{badge,button,card-icon,grid,group,heading,text}/*.twig`; `components/{card-icon,grid,group,heading,text}/*.component.yml`; `build/main.min.css`; new `components/panel/`, `components/stat-badge/`. `build/motion.js` is byte-identical to stock. No `*.tailwind.css` edit, no `src/theme.css` or `src/fonts.css` edit.
+- Web root: `web/theme.css` diffed against stock `src/theme.css`; `web/fonts.css` and `web/fonts/` are new.
+- Canvas inputs: I read all 401 lines of `recipes/badcamp_pages/content/canvas_page/7562db90-....yml`. Zero raw hex, oklch, rgb, px or rem, zero `style`, zero arbitrary values. Every non-copy input is an enum or a boolean.
+- Home and other Canvas content: `canvas_page__components` holds page 1 (Home: `button`, `cta`) and page 3 (this page). No other Canvas page exists.
+
+## 1. Per-change table
+
+Layer names are the adapter's `[L1]` to `[L5]` tags. "Log" is the `docs/css-change-log.md` entry (16 entries, all present).
+
+| # | Change | F's layer | My layer | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | `web/theme.css` `:root` neutrals: `--background/--foreground/--card/--muted/--border/--input` (+ foregrounds) to `#fff #3d3d3d #f4f6f8 #dce1e6` | L1 | L1 | PASS layer; WARN provenance (W8) | Site-wide semantic tokens, so L1 is the only layer that can carry them. But only `#3d3d3d` is in the profile or the badcamp.org stylesheet. I fetched the live stylesheet: `#f4f6f8` and `#dce1e6` do not occur in it. The log calls them "brand neutrals". |
+| 2 | `--primary/--secondary/--accent` (+ foregrounds) to `#0076a8 / #d44418 / #fdd362` | L1 | L1 | PASS | Brand colours; highlight into `--accent` follows the adapter's "brand colour with no slot" rule. All three hex values are in the live stylesheet. 600-shades unused: correct. |
+| 3 | `--font-sans/--font-body/--font-serif` to Lexend / Inter / Aleo, plus `web/fonts.css` `@font-face` and `web/fonts/*` | L1 | L1 | PASS | Token values at L1; `@font-face` only in `fonts.css`. All 6 `url()` return HTTP 200 (checked). Latin and latin-ext declared for every family (avoids the stock `unicode-range` gotcha). No third-party CDN. |
+| 4 | `--radius` 0.5rem to 0.75rem | L1 | L1 | PASS | Brand "containers 0.75rem"; every `rounded-sm/md/lg/xl` derives from it (L2), so one L1 edit is the right size. Intended site-wide. |
+| 5 | `--radius-pill: 2rem` in `:root` | L1 (new token) | L1 | PASS with WARN (W5) | Defensible. Tailwind's `rounded-4xl` is exactly 2rem, so adapter step 2 ("a scale step fits, use it") could be read the other way, but the value is a brand value that should live in one token (step 1). Fallback gap noted in W5. |
+| 6 | `src/main.css` `@theme inline` `--radius-pill: var(--radius-pill)` | L2 | L2 | PASS | Needed for the `rounded-pill` utility to exist; same self-referencing pattern as the `--shadow-*` and `--font-sans` lines. Built CSS has `.rounded-pill{border-radius:var(--radius-pill)}`. |
+| 7 | `button.twig` base `rounded-lg` to `rounded-pill` | L4 | L4 | PASS (intended site-wide L4) | Only buttons should change, and `--radius` is shared with cards, so L1 to L3 cannot do it. Logged. **Blast radius is wider than the log says:** it also restyles the buttons that `navbar` (site chrome, badcamp#10) and `card-pricing` embed, and Home's CTA button (verified: `rounded-pill` count is 1 on `/`). |
+| 8 | `badge.twig` base `rounded-sm` to `rounded-pill` | L4 | L4 | WARN (W1) | Logged as an intended site-wide L4 change, so not a BLOCK. But the need is one instance (the hero eyebrow), the profile's brand lists "buttons 2rem, containers 0.75rem" and says nothing about badges, and the log entry's whole ruling is "same reasoning as button". Every badge on the site now changes without an operator decision. Better: an additive optional prop (for example `shape: pill`, default unchanged), or confirm the site-wide intent in the profile. |
+| 9 | `.dark` block mirrors the brand tokens | L3 | L3 | PASS layer; WARN provenance (W8) | `.dark` is the L3 zone for the `scheme` setting. The dark neutrals `#2e2e2e #333333 #4a4a4a #f4f6f8` have no source. `#242424` (footer) as page background is reasoned. `scheme` is restored to `light` (checked with `drush config:get`). |
+| 10 | `text_color: on-primary` added to `text` and `heading` maps | L4 | L4 | PASS for `text`; WARN for `heading` (W2) | See W2: the log's L3 ruling is factually wrong for `heading`. |
+| 11 | `card-icon` optional `eyebrow` element (`text-xs ... uppercase text-foreground/80`) | L5 | L5 | PASS (see A2) | A new optional element with its own hard-coded utilities is "a component's own Twig utilities" = L5; no token or zone can add an element. `/80` (opacity derivation) is the right L2 step. Additive; byte-impact only whitespace (W4). |
+| 12 | `group` `flex_direction: column-sm-row` (`flex-col sm:flex-row`) | L4 | L4 | PASS | Additive enum value on the variant map; mobile-first. Log has no explicit "L1 to L3 ruled out" line (W6). |
+| 13 | `grid` `columns: '3 columns, 2 on tablet'` (`md:grid-cols-2 lg:grid-cols-3`) | L4 | L4 | PASS | No stock variant gives 2 at md then 3 at lg (stock has 2 at md, 3 at md, 4 at sm/lg). Additive; mobile-first. |
+| 14 | `heading` `highlight_text` / `highlight_color` + span | L4 | L4 | PASS layer; WARN (W4) | Token-backed (`text-accent/primary/secondary`), additive props, reuse of `heading` rather than a new component. Default output differs only in whitespace. |
+| 15 | New SDC `stat-badge` | L5 | L5 | PASS | Reuse search is real (see section 4). |
+| 16 | New SDC `panel` | L5 | L5 | PASS | Reuse search is real (see section 4). Overlap is the novel capability. |
+| 17 | `web/fonts/*`, `build/main.min.css` rebuild, `.stylelintrc.json` | n/a | n/a | PASS | Derived or tooling. Build in sync: I rebuilt to a scratch path with the theme's own `tailwindcss --input ./src/main.css --minify`, `shasum` identical to `build/main.min.css` (69,932 B, `f16830a1...`). |
+
+Completeness: I found no style-affecting change without a log entry. Canvas instance prop choices (section zones and enum paddings, `badge style: secondary`, button variants, `card-icon icon_style/background_color`) are "choose an existing variant" and need no code; they were not logged and I do not require it (A5).
+
+Log accuracy: file and line references in the log match the files (`button.twig:L10`, `badge.twig:L13`, `text.twig:L25`, `heading.twig:L18`, `group.twig:L8`, `grid.twig:L31`, `main.css:L34`, `theme.css:L34`). One stale reference: the DOM-inspection gate cites `curl .../page/2`, which no longer exists (the page is `/page/3` after the recipe round trip).
+
+## 2. Existing-component additivity (the seven L4/L5 edits)
+
+I rendered the stock Twig and the converted Twig side by side with PHP (`twig/twig` from `vendor/` plus the `cva` module's `html_cva` extension, stubs for `create_attribute`, `attach_library` and the icon include), over the cartesian product of every **stock** enum and boolean value in each stock `*.component.yml` (capped at 6,000 combinations, sampled by `shuffle`), crossed with string-prop samples (HTML-special characters, with and without `url`, with and without `icon`). The harness lives in my scratch dir, not in the repo.
+
+```
+component  combos  byte-diff  whitespace-normalised-diff
+heading     3600     3600        1800   (url cases only; see W4)
+text          21        0           0
+card-icon   9720     9720           0   (blank lines only; see W4)
+grid         216        0           0
+group       6000        0           0
+button      2304     2304        2304   (rounded-lg -> rounded-pill, logged)
+badge         16       16          16   (rounded-sm -> rounded-pill, logged)
+```
+
+- `text`, `grid`, `group`: byte-identical for every stock value. Purely additive.
+- `heading` and `card-icon`: the new markup capture adds whitespace around the text. Visually identical (whitespace at line edges collapses, accessible name is trimmed), but not byte-identical. With `url`, stock `<a href="/donate">Text</a>` is now `<a href="/donate"> Text </a>`. W4.
+- `button`, `badge`: the only change in output is the intended radius class.
+- Home (`/`): the served HTML has exactly one `rounded-pill` (the CTA button) and nothing else of the seven components; reasoned from the Twig diff, the only difference from stock rendering is that class.
+
+## 3. Blast-radius gate (adapter's Stylelint rulesets, verbatim)
+
+Stylelint is not installed in the repo (no root `package.json`). I used 17.15.0 from another project's `node_modules` (`/Users/andreangelantoni/Sites/language-buddy/node_modules/stylelint`). The adapter's two rulesets were written verbatim to scratch files (`hand.json`, `tok.json`, `font.json`). `SL=<that path>/bin/stylelint.mjs`, `T=web/themes/custom/mercury`.
+
+```
+$ node $SL --config hand.json --allow-empty-input $T/src/main.css $T/components/*/*.tailwind.css
+web/themes/custom/mercury/components/anchor/anchor.tailwind.css
+  4:3  x  Too many type selectors in "&:is(span, a)", maximum 1  selector-max-type
+1 problem (1 error, 0 warnings)   exit=2
+
+$ node $SL --config hand.json <stock 1.0.5>/src/main.css <stock>/components/*/*.tailwind.css      (baseline)
+.../anchor/anchor.tailwind.css
+  4:3  x  Too many type selectors in "&:is(span, a)", maximum 1  selector-max-type
+1 problem (1 error, 0 warnings)   exit=2
+
+$ node $SL --config tok.json web/theme.css             -> no output, exit=0
+$ node $SL --config font.json web/fonts.css            -> no output, exit=0
+
+$ negative control: copy of theme.css + ".card { color: red; } @import 'x.css';"
+  98:9  x  Disallowed property "color"   property-allowed-list
+  99:1  x  Disallowed at-rule "@import"  at-rule-allowed-list
+2 problems   exit=2
+
+$ node $SL --config .stylelintrc.json $T/src/main.css "$T/components/**/*.tailwind.css" web/theme.css web/fonts.css   (repo config as committed)
+  anchor.tailwind.css 4:3 selector-max-type            exit=2
+```
+
+Reading:
+- `.stylelintrc.json` matches the adapter's rule values exactly (merged with `overrides` and a top-level `"rules": {}`).
+- The only hand-written CSS this cycle changed is `src/main.css` (one `@theme inline` line): 0 findings. `theme.css` and `fonts.css`: 0 findings. The negative control fails as designed.
+- The single error is in `anchor.tailwind.css`, **unchanged from stock** and reported identically on the pristine 1.0.5 copy. Pre-existing, not introduced: noted, not blocking. It contradicts the adapter's "stock passes with 0 findings" under Stylelint 17.15 (A1). F reported 0 findings and did not record the Stylelint version; that is probably a 16.x vs 17.x difference in how `:is()` arguments are counted for `selector-max-type`.
+- `prettier --check` (the theme's own `npm run format` rule) on every changed component directory and `src/main.css`: all pass.
+
+Alongside the gate (A reads the diff):
+
+| Telltale | Result |
+|---|---|
+| Raw hex/oklch/rgb in Twig or Canvas inputs | None. Raw colours appear only in `web/theme.css` (L1, where they belong). |
+| Arbitrary-value utilities where a scale step or token exists | None in new or changed Twig. (`[&_a]:hover:...` in the new `on-primary` text entry copies the stock `inverted` line; `gap-[2px]` and similar are stock.) |
+| Inline `style=` | None. |
+| `!important`, ID selectors | None. |
+| `max-width` media queries | None. All new utilities are unprefixed-first (`flex-col sm:flex-row`, `md:grid-cols-2 lg:grid-cols-3`, `md:w-64 xl:w-72`, `-mt-8 md:-mt-10 xl:-mt-12`). |
+| Edits under `web/themes/contrib/mercury` | None (directory removed by Composer; nothing patched in place). |
+
+## 4. Reuse searches for the two new components
+
+- **`panel`: real.** Checked against source: `card.twig` renders the `<h3>` only inside `{% if is_clickable %}` (line 150 to 152), so a non-link card has no heading, as F says. `card-icon` hard-codes an `<h3>` (would skip a heading level under an h2 page structure). `group` has padding and radius but its `background` enum is `primary/secondary/accent` only, with no border, shadow or overlap. `section` has no negative-margin value (`margin_block_start` is 0 to 128) and its background is a full-bleed layer. The overlap is genuinely absent from Mercury. Alternative considered: extend `group` additively (a neutral background value, border, shadow and an overlap prop). That is three props on a hot component for one use, so a new SDC is reasonable. PASS. The panel's overlap amounts (`-mt-8/-mt-10/-mt-12`) are each at most the hero's `pb-10/13/16`; the coupling between the panel's overlap and the previous section's bottom padding is documented in the prop description but is invisible to the layer model (A5).
+- **`stat-badge`: real.** `badge` is a small rectangular label with one text node. `card-icon` has the hard-coded `h3`, an icon block and a radius enum that stops short of a circle. `group` could approximate it (padding, `radius` up to `xl`) but has no `rounded-full` or `aspect-square`, and would need a heading and a text child, giving two levels of markup for a value-over-label. A new SDC is reasonable. PASS.
+
+## 5. Other findings
+
+### WARN
+
+- **W1 `badge` pill is a site-wide change justified by one instance** (row 8). Needs an operator decision or an additive `shape` prop. Not a BLOCK because it is logged as intended L4.
+- **W2 `heading` `on-primary` ruling is wrong.** The log says L3 is ruled out because "heading/text set their own colour, so the zone colour is not inherited". `heading` defaults to `text-inherit`, and `section` already puts `text-primary-foreground` on the primary zone. In the served HTML the hero `<h1>` would inherit white with `text_color: default`. So the hero heading's `on-primary` instance prop is unnecessary (L3 inheritance already works); only `text` (default `text-foreground`, its own colour) genuinely needs it. The `heading` variant is needed only in the closing panel because `group background: primary` sets `bg-primary` without the paired `text-primary-foreground`, unlike `section`, which pairs them. The highest correct layer for the closing-panel case is fixing the zone wrapper (`group`'s background variants), not adding a colour variant to each child. Defensible and additive as built, but suboptimal; the log should say so.
+- **W3 DOM-inspection evidence is stale** (cites deleted `/page/2`). Re-run against `/page/3`.
+- **W4 `heading` and `card-icon` default output is not byte-identical.** Extra whitespace from the new `{% set ... %}` capture; for `heading` with `url` it lands inside the `<a>`. Visually and semantically the same. Fix: use whitespace control (`{%- ... -%}`) inside the new capture blocks so unused-feature output matches stock. Cheap, and it makes "additive" mechanically true.
+- **W5 `--radius-pill` has no fallback.** It exists only in `web/theme.css`. Mercury's own `src/theme.css` (the fallback when the web-root file is absent) does not define it, so without the override every button and badge loses its radius silently (invalid `var()`). Either add the token to `src/theme.css` as well (L1 source of the fallback) or record the dependency in the profile.
+- **W6 Three L4 log entries lack an explicit "higher layers ruled out" line** (`badge` defers to `button`; `group` and `heading highlight` state the gap but not L1 to L3). The adapter says to record why each higher layer was ruled out.
+- **W7 The gate is not reproducible from the repo.** No `package.json`, no pinned Stylelint, no pre-commit hook (F's "left undone" notes this). Until it exists, the gate result depends on which Stylelint is on the machine (see the `anchor` finding).
+- **W8 Provenance of values.** Light neutrals `#f4f6f8`, `#dce1e6` and the dark neutrals `#2e2e2e`, `#333333`, `#4a4a4a`, `#f4f6f8` are not in the profile or the badcamp.org stylesheet; they are F's choices, labelled "brand neutrals" in the log. Layer is right; the label is not. Add them to the profile as decided values or mark them provisional.
+- **W9 Process: the pristine conversion was never committed as a baseline** (F finding 7). My baseline came from the Composer cache zip. If that cache were cleared, nothing in git or the tree could prove "additive vs stock". O should commit the conversion separately before anything else lands.
+
+### INFO
+
+- **I1** The button radius change reaches the site chrome (navbar, card-pricing embeds), which badcamp#10 owns. Intended by the brand, but worth stating in the PR.
+- **I2** `secondary-inverted` is used in place of the mockup's outline button (recorded deviation). Choosing an existing variant is the adapter-preferred route; no new variant needed.
+- **I3** `highlight_color: primary` on a primary band would be invisible; the prop description warns, which is sufficient.
+
+## 6. Adapter findings (ambiguities and gaps hit by real changes this cycle)
+
+- **A1 Stylelint version and "stock passes with 0".** With Stylelint 17.15.0 the stock 1.0.5 `anchor.tailwind.css` yields one `selector-max-type` error. The adapter must pin a Stylelint version or raise the ceiling for `:is()`/`:where()` lists. Also, the adapter's two JSON rulesets cannot be dropped in as one config (F's finding 6, confirmed); it should supply a combined `.stylelintrc.json` with `overrides`. And it never says where Stylelint is installed.
+- **A2 L4 vs L5 for "add to an existing component".** The hierarchy puts "a component's own Twig utilities" in L5 and "html_cva variant maps" in L4. F logged `heading` highlight as L4 and `card-icon` eyebrow as L5, both additive optional features on a shared component. The adapter needs a rule: additive entry in an existing variant map = L4; new hard-coded element or utilities in an existing component = L5; and say that either affects every instance that opts in (but none that do not).
+- **A3 New brand value: token or scale step?** Step 2 says to use a Tailwind step if one fits (`rounded-4xl` is exactly 2rem), step 1 says brand values are tokens. The adapter does not say which wins, nor that a new token also needs the `@theme inline` line (F's finding 12) and a fallback in `src/theme.css` (W5).
+- **A4 Zone-awareness is uneven and undocumented.** `section` pairs `bg-*` with `text-*-foreground`; `group.background` does not; `heading` inherits colour, `text` does not. The adapter's L3 text ("choose the zone prop on the wrapper") implies children follow, which is true for some and not others. It should list zone-aware wrappers and the child components that inherit (F's finding 11 hit this; W2 is the consequence).
+- **A5 Cross-instance dependencies and instance-level choices are outside the layer model.** The panel's overlap works only because the previous section's `padding_block_end` is at least the overlap; changing one Canvas prop on one instance silently breaks another. The adapter also does not say whether Canvas prop choices on instances need log entries (L5 "one-off prop value" suggests yes, practice here was no).
+- **A6 No mechanical check for L4 blast radius.** The gate covers hand-written CSS and token files only; the adapter says "no Twig-aware linter covers" Twig edits. The stock-vs-converted render diff I built (section 2) is the check that makes "additive" verifiable, and the adapter should ship one, plus require the pristine baseline to be committed first (W9). It should also say how A sizes an L1 token change (unbounded by design): list consumers, for example count the utility in served HTML for Home and chrome.
+- **A7 The conversion deletes the baseline.** `composer remove drupal/mercury` deletes `web/themes/contrib/mercury`; the baseline survives only in git if the conversion is committed first, or in the Composer cache. The adapter's "commit the rebuilt build as baseline" step should be an explicit O step before F starts (F's finding 7, confirmed).
+
+## Notes for F
+None required (PASS). If O wants the WARNs closed before T: W4 (whitespace control), W5 (fallback token), W2 (log ruling; optionally `default` for the hero heading), W1 (decide badge scope).
+
+## Patterns referenced
+- `web/themes/custom/mercury/components/section/section.twig` (zone-aware `backgroundColor` map pairing `bg-*` and `text-*-foreground`)
+- `web/themes/custom/mercury/components/card/card.twig` (heading renders only when linked)
+- `web/themes/custom/mercury/components/group/group.twig` (variant map, `background` without paired foreground)
+- Stock baseline: `~/Library/Caches/composer/files/drupal/mercury/8e615fe51c9c97ebd8d6f015a50f897b0c33e8bf.zip` (Mercury 1.0.5)
+
+---
+
+# Round 2 (re-review after F's rework round 1)
+
+Inputs: `F-handoff.md` "Rework round 1", the updated `docs/css-change-log.md` (20 entries, 2 tagged `[removed]`), the updated profile, O's baseline commit `3e99366` (pristine Mercury 1.0.5), and the current adapter text in the playbook worktree (L4/L5 rule, brand-value-is-a-token with three edits, zone-aware wrappers, additivity check, Stylelint pin, L1-token sizing). Judged against that text. Read-only; headless; scratch files only.
+
+## Round 2 verdict: PASS (0 BLOCK, 0 WARN, 3 INFO)
+
+All nine round-1 WARNs are closed. Each one was checked against the tree, not against F's description of it.
+
+## R2.1 Per-change table (every new or changed CSS entry)
+
+Diff basis: `git diff 3e99366 -- web/themes/custom/mercury` (17 files) plus untracked `web/theme.css`, `web/fonts.css`, `components/panel/`, `components/stat-badge/`. `panel` and `stat-badge` are unchanged since round 1 (file mtimes) and their round-1 PASS stands.
+
+| # | Change (log entry) | F's layer | My layer | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | Neutrals in `web/theme.css` `:root` to `#fff #3d3d3d #eee #3d3d3d #eee #3d3d3d #ccc #ccc` | L1 | L1 | PASS | Closes W8. Every value is on the profile's neutral scale, and `#eee`, `#ccc`, `#3d3d3d`, `#fff` also occur in the live badcamp.org stylesheet. The invented `#f4f6f8` / `#dce1e6` are gone. Provenance is per value in the log. |
+| 2 | `--primary/--secondary/--accent` (+ foregrounds) | L1 | L1 | PASS | Unchanged from round 1. |
+| 3 | `--font-*` plus `fonts.css` / `web/fonts/*` | L1 | L1 | PASS | Unchanged. 6 of 6 font URLs return 200 (re-checked). |
+| 4 | `--radius: 0.75rem` | L1 | L1 | PASS | Unchanged. |
+| 5 | `--radius-pill: 2rem` in `web/theme.css` | L1 | L1 | PASS | Matches the adapter's rule that a brand value is a token even when `rounded-4xl` equals it. |
+| 6 | `--radius-pill` in `src/theme.css` `:root` and `.dark` (lines 33, 80) | L1 | L1 | PASS | Closes W5. This is the second of the adapter's "three edits"; verified in the diff against `3e99366`. |
+| 7 | `--radius-pill` in `src/main.css` `@theme inline` | L2 | L2 | PASS | Third of the three edits. The log has it as three entries (web-root L1, fallback L1, L2), which satisfies "log it as two entries" and then some. |
+| 8 | `button` base `rounded-lg` to `rounded-pill` | L4 | L4 | PASS (intended site-wide L4) | Unchanged and logged, with L1 to L3 each ruled out. Consumers of the radius in served HTML are in R2.3. |
+| 9 | `.dark` block derived from the neutral scale | L3 | L3 | PASS | Closes the dark half of W8. Values `#242424 #eee #3d3d3d #646464` are the profile's stated derivation, and the profile and log both label it provisional. Contrast spot checks: dark foreground on background 13.4:1, on card 9.4:1; light foreground on `#eee` 9.4:1; white on `#0076a8` 5.05:1. Scheme is `light` (`drush config:get`). |
+| 10 | `group` `background`: `bg-* text-*-foreground` pairing | L4 | L4 | PASS (intended site-wide L4; effect on existing uses stated and verified) | Matches the adapter's zone-aware text: the wrapper pairs the foreground, with no per-child colour variants. The log states the effect: instances with a background now also set the paired text colour; none exist outside this page. I verified that independently: `canvas_page__components` has `group` only on page 4 (3 instances, one with a background); no other component or template includes `group`; Home is `button` and `cta`. Closes W2. |
+| 11 | `text` `text_color: inherit` | L4 | L4 | PASS | Additive enum value. This is the adapter's "an inheriting option" for `text`. It replaces `on-primary`; the hero and panel headings now use `default` (verified in the recipe: no `on-primary` anywhere, `text_color: inherit` x4, `default` x6). |
+| 12 | `badge` `shape` (default / pill), radius chosen before `html_cva` | L4 | L4 | PASS | Closes W1. Opt-in per instance; matches the profile's new "badges: pill is opt-in" line. Default output is byte-identical to stock (R2.2). Hero eyebrow uses `shape: pill`. |
+| 13 | `card-icon` `eyebrow` | L5 | L5 | PASS | New hard-coded element = L5 under the adapter's rule. Eyebrow now printed on the same line as the `<h3>` (the adapter's stable form). Closes the card-icon half of W4. |
+| 14 | `group` `column-sm-row` | L4 | L4 | PASS | Now with an explicit L1 to L3 ruling. Closes W6 for this entry. |
+| 15 | `grid` `3 columns, 2 on tablet` | L4 | L4 | PASS | Same. |
+| 16 | `heading` `highlight_text` / `highlight_color` | L4 | L4 | PASS | Same; whitespace control in place (R2.2). |
+| 17 | `stat-badge`, `panel` (new SDCs) | L5 | L5 | PASS | Unchanged from round 1; the log gains an "L1 to L4 cannot create a component" line. |
+| 18 | `[removed]` entries (site-wide badge radius; `on-primary` pair) | n/a | n/a | PASS | Both are truly gone from the tree: `badge.twig` has no unconditional `rounded-pill`, and `grep on-primary` finds nothing in the theme, recipe or log's active section. |
+
+Completeness: no style-affecting change lacks a log entry. Per the adapter, new prop values (`inherit`, `shape`, `column-sm-row`, the grid value, `eyebrow`, `highlight_*`) are all logged; existing-variant instance choices correctly are not.
+
+## R2.2 Additivity, render-diff harness against `3e99366`
+
+Baseline components extracted with `git archive 3e99366 web/themes/custom/mercury/components`, rendered side by side with the same PHP harness as round 1 (`twig/twig` plus the `cva` extension, stubs for `create_attribute`, `attach_library`, icon include) over the cartesian product of every **baseline** enum and boolean value (capped at 6,000 per component) crossed with string samples (HTML-special characters, with and without `url`, `icon`).
+
+```
+component  combos  byte-diff
+heading     3600        0
+text          21        0
+card-icon   9720        0
+grid         216        0
+badge         16        0
+button      2304     2304   rounded-lg -> rounded-pill (logged, intended)
+group       6000     6000   every one of these combos sets `background`; see below
+group, background unset or empty (9000 combos, all other props varied): 0 byte-diff
+```
+
+- Group with a background set differs only by the added `text-<zone>-foreground` class (example: `bg-secondary` becomes `bg-secondary text-secondary-foreground`), exactly the logged change. With `background` unset or empty, output is identical to stock across 9,000 combinations.
+- New-prop-unset checks, all identical to stock: `badge` `shape` unset and `shape: default`; `card-icon` `eyebrow` empty; `heading` `highlight_text` empty or not found in the text (with and without `url`).
+- New-prop-set sanity: `shape: pill` gives `rounded-pill border` (class order intact); `eyebrow` prints directly before the `<h3>`; `highlight_text` wraps the phrase in `<span class="text-accent">`.
+- Round-1 W4 (whitespace drift in `heading` / `card-icon`) is closed: 0 of 13,320 combinations differ.
+- Build in sync: `tailwindcss --input ./src/main.css --minify` to a scratch path is byte-identical to `build/main.min.css` (69,726 B). `prettier --check` passes on every changed component directory and `src`. (`npm run format:check` also flags `mercury.info.yml`; that file is byte-identical to the baseline commit, so it is a stock Mercury formatting nit, not this cycle.)
+
+## R2.3 Sizing the L1 token changes (the adapter's new step)
+
+Counts of the utility in the served HTML (`/perks-trial` / Home `/` / `/user/login` as a chrome probe):
+
+| Consumer of the token | Perks | Home | Login |
+|---|---|---|---|
+| `rounded-pill` (`--radius-pill`) | 4 (3 buttons, 1 eyebrow badge) | 1 (CTA button) | 0 |
+| `rounded-md` / `rounded-xl` (`--radius`) | 8 / 8 | 2 / 0 | 0 |
+| `bg-primary` / `bg-muted` / `bg-background` | 2 / 2 / 8 | 1 / 1 / 1 | 0 |
+| `text-foreground` / `border-border` | 16 / 9 | 1 / 2 | 0 |
+| `font-body` / `font-sans` | 13 / 3 | 1 / 0 | 0 |
+
+Every Home consumer is meant to change (brand tokens, badcamp#10 scope). The site chrome is not covered by the probe because the login route does not render these utilities; `navbar` and `card-pricing` embed the button component and so inherit the pill radius, which the `button` log entry already states.
+
+## R2.4 Blast-radius gate
+
+```
+$ npm run lint:css            (stylelint 16.26.1, root .stylelintrc.json)
+exit=0, no output
+```
+
+- Version check: `node_modules/.bin/stylelint --version` prints 16.26.1, matching the adapter pin and `package.json`. With the pin, `anchor.tailwind.css` no longer reports (the round-1 finding was the Stylelint 17 artifact, as suspected).
+- Negative controls, run on scratch copies so the repo is untouched (`git status` shows `web/theme.css` untouched since the review began):
+  - `.card { color: red; }` appended to a `theme.css` copy: `98:9 Unexpected property "color" property-allowed-list`.
+  - `@import "x.css";` appended to a `fonts.css` copy: `72:1 Unexpected at-rule "@import" at-rule-allowed-list`. Exit 2 for both.
+  - `#x .a .b .c .d { color: red !important; }` appended to a `main.css` copy: four errors, `selector-max-compound-selectors`, `selector-max-id`, `selector-max-specificity`, `declaration-no-important`. Exit 2.
+- Telltales: none. Recipe YAML has no hex, oklch, rgb, `style`, arbitrary values or `!important`; new Twig adds only scale-step utilities, all mobile-first. The one new arbitrary-variant string (`[&_a]:hover:opacity-70` in `text` `inherit`) follows the stock `[&_a]:hover:...` pattern in the same map.
+
+## R2.5 `/perks-trial` serves
+
+- `GET /perks-trial` returns 200; `GET /page/4` returns 301 to `/perks-trial`; Home returns 200.
+- The page links `/theme.css` and `/fonts.css` (both 200) and no `src/theme.css` or `contrib/mercury` path (0 matches). Served `theme.css` carries `--card:#eeeeee`, `--border:#cccccc`, `--radius-pill:2rem`, and the derived `.dark` block.
+- Recipe: `path.alias: /perks-trial` is exported; inputs contain `shape: pill` (hero eyebrow), no `on-primary`, `text_color: inherit` on the zone children; the closing `group` serves `bg-primary text-primary-foreground`. 31 components, as before.
+- Not re-run by me: the delete-and-apply recipe round trip (it changes the database, outside my remit); I rely on F's report of it, and the served alias, uuid and component state above are consistent with it.
+
+## R2.6 Remaining findings
+
+- **I4 (INFO)** The reviewed state is still uncommitted (`package.json`, `package-lock.json`, `.stylelintrc.json`, `web/theme.css`, `web/fonts*`, `recipes/`, the two new SDCs, `docs/`). O commits after the remaining gates; nothing to fix.
+- **I5 (INFO)** `playwright` is pinned in the root `package.json` but installs no browser; a clean machine needs a browser download step before the axe script runs (F's adapter finding 8). Not a layering matter.
+- **I6 (INFO)** Round-1 I1 and I2 stand: the pill button reaches `navbar` and `card-pricing` (badcamp#10 chrome), and `secondary-inverted` replaces the mockup's outline button. Both are recorded; flag the first in the PR.
+
+## R2.7 Adapter findings, round 2
+
+The updated adapter text answered round-1 A1 to A7 and was sufficient to place every change this round without ambiguity. Two small leftovers:
+
+- **A8** The additivity method names `renderInIsolation` via `drush scr` and, separately, `twig/twig` from `vendor/`; I used the latter and it worked on the host without DDEV. Say that either route is acceptable, and that the harness must cross each baseline enum with an explicit "boolean/enum prop unset" case: my first pass could not reveal `group`'s unset behaviour because every stock combination sets `background`, so the "unset is byte-identical" claim needed a separate run.
+- **A9** "Sizing an L1 token change" asks for counts on the changed page, Home and the chrome, but gives no way to fetch the chrome (the login route here rendered none of the utilities). Name a chrome route per project in the profile.
+
+## Round 2 notes for F
+None. PASS.

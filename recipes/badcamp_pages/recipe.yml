@@ -1,0 +1,6 @@
+name: BADCamp pages
+type: Content
+description: Canvas pages for the BADCamp donor-perks site, shipped as default content (one file per page under content/canvas_page/).
+install:
+  - canvas
+  - mercury

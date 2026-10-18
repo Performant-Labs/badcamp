@@ -1,0 +1,402 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: 7562db90-6285-4f93-b533-75efa67696ff
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Perks (trial)'
+  components:
+    -
+      uuid: b04cdb7e-7e5b-4cf2-80e5-55ccd18311d6
+      component_id: sdc.mercury.section
+      inputs:
+        columns: 67-33
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: primary
+        width: 100%
+        mobile_columns: '1'
+        margin_block_start: '0'
+        margin_block_end: '0'
+        section_header: false
+        section_footer: false
+      label: Hero
+    -
+      parent_uuid: b04cdb7e-7e5b-4cf2-80e5-55ccd18311d6
+      slot: main_slot
+      uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
+      component_id: sdc.mercury.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: start
+      label: 'Hero copy'
+    -
+      parent_uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
+      slot: group_slot
+      uuid: 70223261-de9a-4488-ac9d-2db18e4fb1f7
+      component_id: sdc.mercury.badge
+      inputs:
+        label: 'OPTIONAL ATTENDEE DONATION'
+        style: secondary
+        shape: pill
+    -
+      parent_uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
+      slot: group_slot
+      uuid: 51338862-bb4f-4bf8-b757-f2fe40a2076f
+      component_id: sdc.mercury.heading
+      inputs:
+        heading_text: 'Give $100 or more. Get the [Bundle name].'
+        level: 1
+        text_size: heading-responsive-6xl
+        text_color: default
+        align: left
+        highlight_text: '[Bundle name]'
+        highlight_color: accent
+    -
+      parent_uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
+      slot: group_slot
+      uuid: 2b569320-216a-4a1b-bd5b-a8bee2d4d33d
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>[One sentence on what your donation does for BADCamp and the community.]</p>'
+        text_size: text-lg
+        text_color: inherit
+    -
+      parent_uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
+      slot: group_slot
+      uuid: 42f2a1b9-4ee0-4a78-8993-14bbb8ed5286
+      component_id: sdc.mercury.group
+      inputs:
+        flex_direction: column-sm-row
+        flex_gap: md
+        items_align: start
+        flex_align: start
+      label: 'Hero buttons'
+    -
+      parent_uuid: 42f2a1b9-4ee0-4a78-8993-14bbb8ed5286
+      slot: group_slot
+      uuid: 7185aac0-bdfc-4b5e-a690-b599c919e5ea
+      component_id: sdc.mercury.button
+      inputs:
+        variant: secondary
+        size: large
+        label: 'Donate $100'
+        href: /donate
+        mobile_width: false
+        icon_first: false
+        disabled: false
+    -
+      parent_uuid: 42f2a1b9-4ee0-4a78-8993-14bbb8ed5286
+      slot: group_slot
+      uuid: c7597ef9-0cec-484e-9ce4-1bcd7c6704f3
+      component_id: sdc.mercury.button
+      inputs:
+        variant: secondary-inverted
+        size: large
+        label: 'See the six perks'
+        href: '#perks'
+        mobile_width: false
+        icon_first: false
+        disabled: false
+    -
+      parent_uuid: b04cdb7e-7e5b-4cf2-80e5-55ccd18311d6
+      slot: main_slot
+      uuid: ecbaeef3-9a3c-4f96-9137-84cfa86fab38
+      component_id: sdc.mercury.stat-badge
+      inputs:
+        value: $100+
+        label: 'unlocks 6 perks'
+        background_color: accent
+    -
+      uuid: 25eeb5e3-dbe7-4ea5-9f7b-0b657a85ef5e
+      component_id: sdc.mercury.section
+      inputs:
+        width: 75%
+        padding_block_end: '32'
+        background_color: muted
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '0'
+        margin_block_end: '0'
+        padding_block_start: '0'
+        section_header: false
+        section_footer: false
+      label: 'Where your donation goes'
+    -
+      parent_uuid: 25eeb5e3-dbe7-4ea5-9f7b-0b657a85ef5e
+      slot: main_slot
+      uuid: 9a315410-2d38-47ea-b6ea-cc8d2dae1ecf
+      component_id: sdc.mercury.panel
+      inputs:
+        overlap: previous-section
+    -
+      parent_uuid: 9a315410-2d38-47ea-b6ea-cc8d2dae1ecf
+      slot: content
+      uuid: 3643304a-a92f-42e8-8e43-fbbdbc6968ce
+      component_id: sdc.mercury.heading
+      inputs:
+        heading_text: 'Where your donation goes'
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 9a315410-2d38-47ea-b6ea-cc8d2dae1ecf
+      slot: content
+      uuid: 931ad259-2c9c-4133-8d70-d980e4717330
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>[Two or three sentences on what donations fund: for example, which costs they cover and who benefits.]</p>'
+        text_size: normal
+        text_color: default
+    -
+      uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
+      component_id: sdc.mercury.section
+      inputs:
+        padding_block_start: '32'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: true
+        width: 100%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '0'
+        margin_block_end: '0'
+        section_footer: false
+      label: 'What you get'
+    -
+      parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
+      slot: header_slot
+      uuid: 83f9e7ba-b30d-4e31-bdbc-f5275d6ca641
+      component_id: sdc.mercury.anchor
+      inputs:
+        id: perks
+    -
+      parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
+      slot: header_slot
+      uuid: c27bb361-d9ed-4cd5-923f-bda8d28b528d
+      component_id: sdc.mercury.heading
+      inputs:
+        heading_text: 'What you get'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
+      slot: header_slot
+      uuid: b7365cbc-0c97-4371-8335-7bea87fce8ed
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>Six thank-yous for every donation of $100 or more.</p>'
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
+      slot: main_slot
+      uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      component_id: sdc.mercury.grid
+      inputs:
+        width: 100%
+        columns: '3 columns, 2 on tablet'
+        mobile_columns: '1'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: 48d59d0e-a44d-43d9-b363-c6e4bdf1f699
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 1'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: star
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 1'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: 0f02b4bf-d45b-4244-aa0e-f7acca3d83cb
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 2'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: identification-card
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 2'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: 10309293-31eb-49d2-b89f-e0a55ad07155
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 3'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: gift
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 3'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: 49c6ae73-0429-4213-808e-9bba55af8c39
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 4'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: coffee
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 4'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: 1762caad-3e5c-45e3-9eb5-fe064a484d3c
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 5'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: ticket
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 5'
+    -
+      parent_uuid: fd573b06-979f-4fdd-b2d0-5d45c887e964
+      slot: main_slot
+      uuid: a24b79d1-a85c-4715-b618-0ce70001d199
+      component_id: sdc.mercury.card-icon
+      inputs:
+        eyebrow: 'Perk 6'
+        text: '[Perk title]'
+        description: '[One or two sentences describing this perk.]'
+        icon: heart
+        icon_size: medium
+        icon_align: left
+        icon_style: primary_background
+        text_align: left
+        background_color: background
+        border_radius: medium
+      label: 'Perk 6'
+    -
+      uuid: ae0ff443-331f-4073-b479-68280fd4a4f1
+      component_id: sdc.mercury.section
+      inputs:
+        width: 75%
+        margin_block_start: '48'
+        margin_block_end: '64'
+        columns: '100'
+        mobile_columns: '1'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+      label: 'Donate and claim your bundle'
+    -
+      parent_uuid: ae0ff443-331f-4073-b479-68280fd4a4f1
+      slot: main_slot
+      uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      component_id: sdc.mercury.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: start
+        radius: xl
+        padding: md
+        background: primary
+    -
+      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      slot: group_slot
+      uuid: c2727cf6-eb8b-4eb7-948f-648b92399031
+      component_id: sdc.mercury.heading
+      inputs:
+        heading_text: 'Donate and claim your bundle'
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      slot: group_slot
+      uuid: f3504b7e-99eb-44af-8d2f-ca776df11261
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>Any gift of $100 or more includes all six perks.</p>'
+        text_size: normal
+        text_color: inherit
+    -
+      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      slot: group_slot
+      uuid: d844524f-52a0-4df0-b086-b322cd44570e
+      component_id: sdc.mercury.button
+      inputs:
+        variant: secondary
+        size: large
+        label: Donate
+        href: /donate
+        mobile_width: false
+        icon_first: false
+        disabled: false
+    -
+      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      slot: group_slot
+      uuid: 44bc0409-b8f1-4f26-ba84-e4db5f95d92d
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>[Tax-deductibility statement, if applicable.]</p>'
+        text_size: text-sm
+        text_color: inherit
+    -
+      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
+      slot: group_slot
+      uuid: cc0bfd6c-e7af-442e-96f0-be07064cfc14
+      component_id: sdc.mercury.text
+      inputs:
+        text: '<p>[How and when perks are delivered after donating.]</p>'
+        text_size: text-sm
+        text_color: inherit
+  path:
+    -
+      alias: /perks-trial
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  metatags:
+    -
+      value: '{"canonical_url":"[canvas_page:url]","image_src":"[canvas_page:image:entity:field_media_image:entity:url]"}'
