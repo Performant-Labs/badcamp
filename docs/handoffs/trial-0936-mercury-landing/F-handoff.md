@@ -149,3 +149,39 @@ Triggered by A's review (PASS with warnings). Baseline is now O's commit `3e9936
 ### Still not done
 
 Fresh-install reproducibility (round trip used the existing DB), focus-ring contrast, U and T3, pre-commit hook for `lint:css`, and `/donate` still 404.
+
+---
+
+## Rework round 2
+
+Blocker from T: light-scheme focus ring on the two "Donate" buttons was 2.15:1 on the blue band (3:1 required).
+
+**Cause (traced):** Mercury's markup uses `focus-visible:ring-ring/50 border-ring ring-[3px]`, but nothing defines `--ring` or `--color-ring`, so those utilities generate nothing and the ring falls back to `currentColor` (`#3d3d3d` on `#0076a8`).
+
+**Fix (3 token edits + 1 variant-map edit; all logged as L1/L1/L2/L4 in `docs/css-change-log.md`, 24 entries):**
+- L1 `--ring` in web-root `theme.css`: light `#242424` (neutral 600), `.dark` `#eeeeee` (neutral 100).
+- L1 the same two values in the converted theme's `src/theme.css` (fallback).
+- L2 `--color-ring: var(--ring)` in `src/main.css` `@theme inline`.
+- L4 `button` and `badge`: `focus-visible:ring-ring/50` to `focus-visible:ring-ring`. Without this the `/50` blends the ring into the band (about 1.8:1). Logged as intended site-wide; it reaches every button.
+
+One colour per scheme reaches 3:1 on every surface, so no two-tone `ring-offset` was needed. Computed ratios, ring vs surface: light `#242424` on #fff 15.52, #eee 13.38, #0076a8 3.07, #fdd362 10.84, #d44418 3.43; dark `#eee` on #242424 13.38, #3d3d3d 9.36, #0076a8 4.35, #d44418 3.90.
+
+**Measured (headless Playwright, real focus, 500 ms settle for the 300 ms transition; changed pixels within 6px of each element, ring colour vs the unfocused colour behind it; scripts in scratch, not in the repo):**
+
+| Element (in `<main>`) | Light 360 and 1280 | Dark 360 and 1280 |
+|---|---|---|
+| "Donate $100" (hero) | `#242424` on `#0076a8` = 3.07:1 PASS | `#eee` on `#0076a8` = 4.35:1 PASS |
+| "See the six perks" (hero) | 3.07:1 PASS (was 3.53 with `currentColor` yellow) | 4.35:1 PASS |
+| "Donate" (closing panel) | 3.07:1 PASS | 4.35:1 PASS |
+
+All 12 main-content measurements pass, and `:focus-visible` matched for each. Roughly 83 to 95% of changed ring pixels are at or above 3:1; the rest are anti-aliased edge pixels. Chrome (badcamp#10, out of scope): skip link and logo use the browser default `#005fcc` ring, 5.98:1 on white (pass) but 2.59:1 on `#242424` in dark (logo and Home links, fail; unchanged and not introduced here).
+
+**Gate and checks:** `npm run lint:css` exit 0, 0 findings. axe at 360/768/1280, light and dark: 0 violations on page content (only the chrome logo `link-name`). Theme rebuilt (69,861 B, was 69,726; two consecutive builds byte-identical). `git diff --exit-code -- web/themes/custom/mercury/build/` is non-zero against HEAD by design (the new `--color-ring` and ring-colour utilities are the only change, 1 minified line); once this round is committed the check is clean. `mercury.settings scheme` restored to `light`. Page, recipe and alias untouched.
+
+**Files changed this round:** `web/theme.css`, `web/themes/custom/mercury/src/theme.css`, `src/main.css`, `components/button/button.twig`, `components/badge/badge.twig`, `build/main.min.css`, `docs/css-change-log.md`, this handoff.
+
+**New adapter findings:**
+1. **Mercury ships utilities that depend on tokens it never defines.** `ring-ring`, `border-ring` appear in `button` and `badge` but there is no `--ring`/`--color-ring` in stock `theme.css` or `@theme inline`, so they silently emit nothing. The adapter's token list (colours, fonts, radius, shadows) omits `--ring`, and its "Per-variant WCAG contrast + focus (G5)" check has no step that finds this; a grep of the Twig for `ring-` against `@theme inline` would.
+2. **Defining the token activates the stock `/50` opacity**, which then fails 3:1. A token-only fix is not enough; the L4 `ring-ring/50` edit is part of the same change. The adapter should say that when a token that was previously absent is added, the utilities that reference it start generating and need re-measuring.
+3. **Focus-ring measurement needs a settle delay** (buttons have `duration-300`) and `focus({ focusVisible: true })`; pressing Tab first reveals the skip link and pollutes the pixel diff. T's method (diff of focused vs blurred pixels against the unfocused backdrop) is the right one and worth putting in the adapter's T section.
+4. **One ring colour per scheme works when it is a near-black or near-white neutral**: against a mid-tone brand blue the usable range is L <= 0.019 or L >= 0.574, which `#242424` and `#eee` satisfy. A brand where the band is mid-luminance on both sides of that range would need the two-tone form.

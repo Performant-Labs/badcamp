@@ -64,6 +64,21 @@ changed in rework round 1 after A's review (W1, W2, W4, W5, W8); their old rulin
   Provenance: profile dark-scheme rule. background `#242424` (600), foreground `#eee` (100), card and muted `#3d3d3d` (500), border and input `#646464` (400), accents as in :root (`#0076a8`, `#d44418`, `#fdd362`), accent-foreground `#242424`. badcamp.org has no dark scheme, so this is provisional, not a brand decision.
   Ruling: layer tag is L3 (the `scheme` zone); L1 values only. Verified with axe in both schemes.
 
+[L1] --ring in :root -> #242424, in .dark -> #eeeeee  web/theme.css:L28, L78  2026-10-18  [added]
+  Provenance: profile neutral scale: `#242424` (600) light, `#eee` (100) dark. Rework round 2, T blocker: focus ring 2.15:1 on the primary band.
+  Trace (Pass 1): button markup has `focus-visible:ring-ring/50 border-ring ring-[3px]` -> Tailwind `ring-ring` needs `--color-ring` -> `@theme inline` has no `--color-ring` and neither `theme.css` nor `src/theme.css` defines `--ring` -> the utilities generated nothing and the ring fell back to `currentColor` (the button's own text colour, `#3d3d3d` on blue = 2.15:1).
+  Ruling: the focus-ring colour is site-wide, so it is a token (L1). No existing token carries it, so this is a new token. One value must clear 3:1 against every surface a focusable element sits on, both schemes. Light `#242424`: 15.52 on #fff, 13.38 on #eee, 3.07 on #0076a8, 10.84 on #fdd362, 3.43 on #d44418. Dark `#eee`: 13.38 on #242424, 9.36 on #3d3d3d, 4.35 on #0076a8, 3.90 on #d44418. A single colour suffices, so no two-tone `ring-offset` was needed. Known limit: dark `#eee` on an `accent` zone is 1.23:1; no focusable element sits on one here, but one added later would need the two-tone form.
+
+[L1] --ring in :root and .dark -> #242424 / #eeeeee  web/themes/custom/mercury/src/theme.css:L28, L77  2026-10-18  [added]
+  Provenance: same values as the web-root entry.
+  Ruling: the fallback when the web-root `theme.css` is absent, so the token exists either way (as for --radius-pill). Same L1 layer.
+
+[L2] --color-ring -> var(--ring) in @theme inline  web/themes/custom/mercury/src/main.css:L24  2026-10-18  [added]
+  Ruling: a token becomes the `ring-ring` / `border-ring` utilities only through the `@theme inline` map; Mercury's existing markup already uses them, so this activates them. Same pattern as `--color-input`.
+
+[L4] button and badge focus ring `ring-ring/50` -> `ring-ring` (full opacity)  components/button/button.twig:L12, components/badge/badge.twig:L19  2026-10-18
+  Ruling: with the token defined, `/50` blends the ring half into the background and drops it below 3:1 (light ring on the blue band would be about 1.8:1). L1 ruled out because the token is already the right colour and the problem is the opacity modifier in the variant map; L2 ruled out because the `/50` is a derivation chosen in the component, not in the map; L3 ruled out because no zone or `.dark` value changes opacity. Intended site-wide: every button and (linked) badge focus ring is now fully opaque. Existing uses affected: all buttons (Home CTA, navbar, card-pricing, this page); before this round the ring was `currentColor`, so none of them had a coloured ring.
+
 [L4] group `background` variants pair their foreground: primary/secondary/accent -> bg-* text-*-foreground  components/group/group.twig:L41-L43  2026-10-18
   Ruling: rework W2. A coloured zone should set its own text colour the way `section` does, so children inherit it. L1 ruled out because changing --foreground or --background would alter every non-zone surface; L2 ruled out because no derived value sets a text colour; L3 ruled out because the zone wrapper IS the group (its variant map is where the pairing belongs), there is no separate zone rule to edit. Intended site-wide change. Existing uses affected: none in git or the database (Canvas content is Home: `button` + `cta`; `group` is used only on this page, 3 instances, one with a background, the closing panel). Instances with a background now also get `text-*-foreground` (previously inherited the page `text-foreground`). Byte-checked: with `background` unset, output is identical to stock.
 

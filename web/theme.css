@@ -25,6 +25,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: #cccccc;
   --input: #cccccc;
+  --ring: #242424;
   --font-sans: "Lexend", "Helvetica Neue", Arial, Helvetica, sans-serif;
   --font-serif: "Aleo", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Fira Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
@@ -74,6 +75,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: #646464;
   --input: #646464;
+  --ring: #eeeeee;
   --font-sans: "Lexend", "Helvetica Neue", Arial, Helvetica, sans-serif;
   --font-serif: "Aleo", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Fira Mono", "Menlo", "Consolas", "Liberation Mono", monospace;

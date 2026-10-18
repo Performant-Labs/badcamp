@@ -259,3 +259,85 @@ The updated adapter text answered round-1 A1 to A7 and was sufficient to place e
 
 ## Round 2 notes for F
 None. PASS.
+
+---
+
+# Round 3 (re-review after F's rework round 2: the `--ring` token)
+
+Inputs: `F-handoff.md` "Rework round 2", the 4 new entries in `docs/css-change-log.md` (24 entries), the profile's new "Chrome route" line, and the uncommitted diff on top of `9fd5050` (9 files). Judged against the current adapter text. Read-only. I did not toggle the colour scheme or change any config; colours are judged from code and the log's arithmetic (which I recomputed). Note: when I read `mercury.settings scheme` it was `dark`, presumably T's measurement in flight; F's handoff says it was restored to `light`, and O or T should confirm it is back before commit.
+
+## Round 3 verdict: PASS (0 BLOCK, 0 WARN, 3 INFO)
+
+## R3.1 Per-change table
+
+Diff basis: `git diff 9fd5050`. Trace (Pass 1) is in the log entry: `ring-ring` / `border-ring` in the Twig, no `--color-ring` in `@theme inline`, no `--ring` in either `theme.css`, so both utilities silently emitted nothing and the ring fell back to `currentColor`. I confirmed the premise independently: the round-2 `build/main.min.css` contained no `--color-ring`, and the stock `src/theme.css` and `src/main.css` at `3e99366` have no `--ring`.
+
+| # | Change (log entry) | F's layer | My layer | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | `--ring: #242424` (`:root`), `#eeeeee` (`.dark`) in `web/theme.css` | L1 | L1 | PASS | The focus-ring colour is a site-wide semantic value with no existing slot, so a new L1 token. Values are profile neutrals (`#242424` = 600, `#eee` = 100), no invented colour. One colour per scheme is chosen, so no `ring-offset` two-tone hack in Twig. |
+| 2 | `--ring` in `src/theme.css` `:root` and `.dark` (fallback) | L1 | L1 | PASS | Second of the adapter's three edits (fallback when the web-root file is absent). The fallback values match the web-root ones, as they did for `--radius-pill`. |
+| 3 | `--color-ring: var(--ring)` in `@theme inline` | L2 | L2 | PASS | Third edit. Same pattern as the adjacent `--color-input`. Built CSS now has `.focus-visible\:ring-ring:focus-visible{--tw-ring-color:var(--ring)}` and `.focus-visible\:border-ring:focus-visible{border-color:var(--ring)}`. |
+| 4 | `button` and `badge`: `focus-visible:ring-ring/50` to `focus-visible:ring-ring` | L4 | L4 | PASS (intended site-wide L4) | The `/50` is a derivation baked into each component's base class list, so L1 to L3 cannot remove it (the token is already the right colour; no zone changes opacity). A half-opacity ring on the `#0076a8` band is below 3:1, so the component edit is required, and it is part of the same change as the token (F's adapter finding 2). Logged with the L1 to L3 ruling-out line and its blast radius. |
+
+Completeness: the three-edit rule is satisfied and logged as the adapter prescribes. No other component uses `ring-ring`, `border-ring` or `outline-ring` (grepped `components`, `templates`, `lib`), so there are no other L4 edits to make; the only two consumers are the two edited components.
+
+## R3.2 Additivity: render-diff harness against `9fd5050` and `3e99366`
+
+Same harness as rounds 1 and 2 (`twig/twig` plus the `cva` extension, baseline Twig extracted with `git archive`), crossing every enum and boolean of the baseline's schema (capped at 6,000 per component) with string samples. For button and badge I also diffed after normalising the new output back to the old focus string; "unexplained" counts the combinations still different.
+
+```
+baseline 9fd5050 (the round-2 state)
+component  combos  byte-diff   unexplained
+heading    10800        0          0
+text          28        0          0
+card-icon   9720        0          0
+grid         234        0          0
+group       6000        0          0
+button      2304     2304          0   (focus classes only)
+badge         32       32          0   (focus classes only)
+
+baseline 3e99366 (pristine Mercury 1.0.5)
+heading     3600        0          0
+text          21        0          0
+card-icon   9720        0          0
+grid         216        0          0
+group       6000     6000          0   (logged background pairing only; 9,000 combos with background unset were identical in round 2 and the group Twig is unchanged since)
+button      2304     2304          0   (rounded-lg -> rounded-pill + focus classes, both logged)
+badge         16       16          0   (focus classes only; shape default and unset otherwise identical)
+```
+
+The only difference this round is the focus-class string in `button` and `badge` (the new utility list is also reordered, `ring-[3px]` before `ring-ring`, which is the formatter's sort and is part of the logged edit). Nothing else moved. Against stock, the focus change plus the earlier logged `button` radius and `group` pairing account for every difference.
+
+## R3.3 Gate and build
+
+- `npm run lint:css` (Stylelint 16.26.1, root `.stylelintrc.json`): exit 0, no output. Negative control on a scratch copy (`.btn { outline: 0; }` appended to `theme.css`): `100:8 Unexpected property "outline" property-allowed-list`, exit 2. The new `--ring` lines are custom properties, so they pass the token-file rule as expected.
+- Build in sync: rebuilding with the theme's own `tailwindcss --input ./src/main.css --minify` to a scratch path is byte-identical to `build/main.min.css` (69,861 B, matching F's figure; `git diff 9fd5050 --stat` for `build/` is 1 line changed). `prettier --check` passes on `components/{button,badge}` and `src`.
+- Recipe, page and alias are untouched this round (not in the diff).
+
+## R3.4 Sizing the L1 `--ring` token by its consumers
+
+The token is read by exactly two generated utilities, `focus-visible:ring-ring` (ring colour) and `focus-visible:border-ring` (border colour), emitted only for the `button` and `badge` components. Counts in the served HTML (class counts only; no colour read from the pages):
+
+| Route | `focus-visible:ring-ring` (opaque) | `ring-ring/50` | `focus-visible:border-ring` | links/buttons on page |
+|---|---|---|---|---|
+| `/` (profile chrome route) | 1 (the CTA button) | 0 | 1 | 8 |
+| `/perks-trial` | 4 (3 buttons, 1 eyebrow badge) | 0 | 4 | 10 |
+
+- Home gets one consumer, which is meant to change (every button's focus ring, logged as intended site-wide).
+- The navbar, header and footer links on `/` do not use the token, so their focus ring is unchanged (F reports the browser default `#005fcc`). That includes the dark-scheme chrome contrast that F flagged as pre-existing and owned by badcamp#10.
+- The eyebrow badge is a non-link `<span>`, so its `focus-visible` styles are dormant; they apply only to a badge with a `url`.
+- Contrast figures recomputed from the hex values (WCAG relative luminance), matching the log: light ring `#242424` on `#fff` 15.52, `#eee` 13.38, `#0076a8` 3.07, `#fdd362` 10.84, `#d44418` 3.43; dark ring `#eee` on `#242424` 13.38, `#3d3d3d` 9.36, `#0076a8` 4.35, `#d44418` 3.90. Each surface a focusable element actually sits on in this page clears 3:1 in its scheme. The log's stated limit (dark `#eee` on an `accent` zone is 1.23:1) is correct and is recorded as a known limit.
+
+## R3.5 Remaining findings
+
+- **I7 (INFO)** `border-ring` also became active. Mercury's markup already carried `focus-visible:border-ring`, and the L2 entry covers it ("activates them"), but the L4 entry mentions only the ring. Effect: on focus the 1px border of a badge or of the `secondary-inverted` button (which has `border-accent`) turns the ring colour. It is the same colour as the ring around it, so it is visually benign, but the log should name it so a later reader is not surprised.
+- **I8 (INFO)** Against the button's own fill the light-scheme ring is low (`#242424` on the `#3d3d3d` `secondary-inverted` fill is 1.43:1). The 3:1 test is against the surrounding surface, where it passes, so this is T's call, not a layering matter.
+- **I9 (INFO)** The scheme setting read as `dark` mid-review (T's toggle). Confirm it is restored to `light` before O commits; it is config, so it is not in the diff.
+
+## R3.6 Adapter findings, round 3
+
+- **A10** F's finding that Mercury ships utilities (`ring-ring`, `border-ring`) whose tokens it never defines is a genuine adapter gap. The adapter's token list should include `--ring`, and the placement procedure should say: when a previously absent token is added, every utility that references it starts generating, so re-run the additivity check and the contrast check on those consumers. (The "three edits" text covered the token mechanics well; it only lacked the "latent utility" case.)
+- **A11** The adapter's three-edit rule worked unchanged for a colour token, not just a radius. No edit needed there.
+
+## Round 3 notes for F
+None. PASS.

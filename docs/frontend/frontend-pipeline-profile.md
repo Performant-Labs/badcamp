@@ -38,6 +38,7 @@
 ## Verification config
 - **Commands:** run through DDEV: `ddev drush cr`, `ddev drush content:export …`, `ddev drush recipe …`.
 - **axe base URL:** the local site URL above (`AXE_BASE_URL`).
+- **Chrome route** (for sizing an L1 token change): `/`, the home page, which renders the header, navbar and footer.
 - **Stateful-surface inventory:** none yet. The landing page has no stateful surface; anchor links only.
 - **Breakpoint overrides:** none (Tailwind defaults; navbar at `md` / 48rem).
 - **CSS change log:** `docs/css-change-log.md`, per `languages/css/css-change-workflow.md`. Every CSS change gets a trace and an `[L1]`…`[L5]` entry, using the adapter's L1–L5 mapping.
