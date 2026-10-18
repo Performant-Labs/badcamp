@@ -108,6 +108,13 @@
 {% set heading_classes = ['text-2xl font-semibold @sm:text-3xl @2xl:text-4xl'] %}
 {% set description_classes = ['mt-3 font-body text-md @sm:text-lg @2xl:text-xl'] %}
 
+{#- Whitespace control keeps the output for a card without an eyebrow identical to stock. -#}
+{%- set eyebrow_markup -%}
+  {%- if eyebrow is not empty -%}
+    <span class="mb-1 text-xs font-semibold tracking-wider text-foreground/80 uppercase">{{ eyebrow }}</span>
+  {%- endif -%}
+{%- endset %}
+
 <div class="{{ tile_classes }}">
   <div class="flex h-full flex-col justify-center">
     <div class="{{ icon_container_classes }}">
@@ -132,7 +139,7 @@
         {% if url is not empty %}
           <a href="{{ url }}" class="flex w-full flex-col before:absolute before:inset-0 before:content-['']">
             {% if text is not empty %}
-              <h3 class="{{ heading_classes|join(' ') }}">{{ text }}</h3>
+              {{ eyebrow_markup }}<h3 class="{{ heading_classes|join(' ') }}">{{ text }}</h3>
             {% endif %}
             {% if description is not empty %}
               <span class="{{ description_classes|join(' ') }}">{{ description }}</span>
@@ -141,7 +148,7 @@
         {% else %}
           <span class="flex w-full flex-col before:absolute before:inset-0 before:content-['']">
             {% if text is not empty %}
-              <h3 class="{{ heading_classes|join(' ') }}">{{ text }}</h3>
+              {{ eyebrow_markup }}<h3 class="{{ heading_classes|join(' ') }}">{{ text }}</h3>
             {% endif %}
             {% if description is not empty %}
               <span class="{{ description_classes|join(' ') }}">{{ description }}</span>

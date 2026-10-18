@@ -30,6 +30,7 @@ props:
         - "1 column"
         - "2 columns"
         - "3 columns"
+        - "3 columns, 2 on tablet"
         - "4 columns"
         - "5 columns"
         - "6 columns"

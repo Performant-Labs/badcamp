@@ -5,6 +5,7 @@
       flexDirection: {
         column: 'flex-col',
         row: 'flex-row',
+        'column-sm-row': 'flex-col sm:flex-row',
         'column-reverse': 'flex-col-reverse',
         'row-reverse': 'flex-row-reverse'
       },
@@ -37,9 +38,9 @@
         xl: 'p-32'
       },
       background: {
-        primary: 'bg-primary',
-        secondary: 'bg-secondary',
-        accent: 'bg-accent'
+        primary: 'bg-primary text-primary-foreground',
+        secondary: 'bg-secondary text-secondary-foreground',
+        accent: 'bg-accent text-accent-foreground'
       },
       animation: {
         fade_up: 'opacity-0',

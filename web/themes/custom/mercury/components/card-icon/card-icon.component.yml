@@ -98,6 +98,12 @@ props:
       type: string
       title: Link
       format: uri-reference
+    eyebrow:
+      type: string
+      title: Eyebrow
+      description: Small uppercase label shown above the heading, for example "Perk 1". Leave empty for none.
+      examples:
+        - Perk 1
     text:
       type: string
       title: Heading

@@ -1,0 +1,25 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Panel
+description: A bordered content card with a slot. It can overlap the bottom of the section above it.
+group: Layout
+props:
+  type: object
+  required:
+    - overlap
+  properties:
+    overlap:
+      type: string
+      title: Overlap
+      description: Pulls the panel up over the bottom of the section above it. The section above needs bottom padding at least as large as the overlap.
+      enum:
+        - normal
+        - previous-section
+      meta:enum:
+        normal: No overlap
+        previous-section: Overlap the section above
+      default: normal
+      examples:
+        - previous-section
+slots:
+  content:
+    title: Content

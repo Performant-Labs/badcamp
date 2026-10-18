@@ -15,9 +15,11 @@ props:
       enum:
         - column
         - row
+        - column-sm-row
       meta:enum:
         column: Vertical
         row: Horizontal
+        column-sm-row: Vertical on mobile, horizontal from sm up
       default: "column"
       examples:
         - "column"

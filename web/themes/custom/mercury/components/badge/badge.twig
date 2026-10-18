@@ -7,10 +7,13 @@
   {% set additional_classes = additional_classes|join(' ') %}
 {% endif %}
 
+{#- Radius class is chosen before html_cva so the default output stays byte-identical to stock (class order unchanged). -#}
+{%- set badge_radius = (shape|default('default')) == 'pill' ? 'rounded-pill' : 'rounded-sm' %}
+
 {% set badge =
   html_cva(
     base: [
-      'rounded-sm border',
+      badge_radius ~ ' border',
       'flex inline-flex items-center gap-[2px] lg:gap-1',
       'px-[6px] py-[5px] lg:px-2 lg:py-[6px] 2xl:px-3 2xl:py-2',
       'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]'

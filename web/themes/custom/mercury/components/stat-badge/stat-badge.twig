@@ -1,0 +1,32 @@
+{% set stat_badge_variants =
+  html_cva(
+    base: ['flex aspect-square w-56 max-w-full flex-col items-center justify-center rounded-full p-6 text-center md:w-64 xl:w-72'],
+    variants: {
+      backgroundColor: {
+        accent: 'bg-accent text-accent-foreground',
+        primary: 'bg-primary text-primary-foreground',
+        secondary: 'bg-secondary text-secondary-foreground',
+        muted: 'bg-muted text-muted-foreground'
+      }
+    }
+  )
+%}
+
+<div class="flex w-full justify-center">
+  <div
+    class="{{
+    stat_badge_variants.apply({
+      backgroundColor: background_color|default('accent')
+    })
+    }}"
+  >
+    <p class="mb-0 font-sans text-5xl leading-none font-bold md:text-6xl xl:text-7xl">
+      {{ value }}
+    </p>
+    {% if label is not empty %}
+      <p class="mt-2 mb-0 font-sans text-base font-semibold md:text-lg">
+        {{ label }}
+      </p>
+    {% endif %}
+  </div>
+</div>

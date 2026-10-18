@@ -28,6 +28,19 @@ props:
         secondary: Secondary
       examples:
         - primary
+    shape:
+      type: string
+      title: Shape
+      description: Corner shape. "Pill" uses the brand pill radius token. Default keeps the stock rounded corners.
+      enum:
+        - default
+        - pill
+      meta:enum:
+        default: Default
+        pill: Pill
+      default: default
+      examples:
+        - default
     icon:
       type: string
       title: Icon name

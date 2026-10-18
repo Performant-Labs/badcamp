@@ -51,11 +51,41 @@
   {% set additional_classes = additional_classes|join(' ') %}
 {% endif %}
 
+{%- set highlight_variants =
+  html_cva(
+    variants: {
+      highlightColor: {
+        accent: 'text-accent',
+        primary: 'text-primary',
+        secondary: 'text-secondary'
+      }
+    }
+  )
+-%}
+
+{#- Split the heading around the highlighted phrase (first match) so it can be wrapped in a span. -#}
+{%- set has_highlight = highlight_text is not empty and heading_text is not empty and highlight_text in heading_text ? 'yes' : 'no' -%}
+{%- set heading_parts = has_highlight == 'yes' ? heading_text|split(highlight_text, 2) : [heading_text, ''] -%}
+{%- set highlight_class =
+  highlight_variants.apply({
+    highlightColor: highlight_color|default('accent')
+  })
+-%}
+
+{#- Whitespace control keeps the output for a heading without a highlight identical to stock. -#}
+{%- set heading_text_markup -%}
+  {%- if has_highlight == 'yes' -%}
+    {{ heading_parts[0] }}<span class="{{ highlight_class }}">{{ highlight_text }}</span>{{ heading_parts[1] }}
+  {%- else -%}
+    {{ heading_text }}
+  {%- endif -%}
+{%- endset %}
+
 {% set heading_content %}
   {% if has_url == 'yes' %}
-    <a href="{{ url }}">{{ heading_text }}</a>
+    <a href="{{ url }}">{{ heading_text_markup }}</a>
   {% else %}
-    {{ heading_text }}
+    {{ heading_text_markup }}
   {% endif %}
 {% endset %}
 

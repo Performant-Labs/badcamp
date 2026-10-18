@@ -1,0 +1,23 @@
+{% set panel_variants =
+  html_cva(
+    base: ['relative z-10 flex flex-col gap-3 rounded-xl border border-border bg-background p-6 text-foreground shadow-md md:p-8'],
+    variants: {
+      overlap: {
+        normal: '',
+        'previous-section': '-mt-8 md:-mt-10 xl:-mt-12'
+      }
+    }
+  )
+%}
+
+<div
+  class="{{
+  panel_variants.apply({
+    overlap: overlap|default('normal')
+  })
+  }}"
+>
+  {% block content %}
+
+  {% endblock %}
+</div>

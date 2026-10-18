@@ -1,0 +1,36 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Stat badge
+description: A circular badge with a large value over a short label, for example "$100+" over "unlocks 6 perks".
+group: Base
+props:
+  type: object
+  required:
+    - value
+    - background_color
+  properties:
+    value:
+      type: string
+      title: Value
+      examples:
+        - "$100+"
+    label:
+      type: string
+      title: Label
+      examples:
+        - unlocks 6 perks
+    background_color:
+      type: string
+      title: Background color
+      enum:
+        - accent
+        - primary
+        - secondary
+        - muted
+      meta:enum:
+        accent: Accent
+        primary: Primary
+        secondary: Secondary
+        muted: Muted
+      default: accent
+      examples:
+        - accent

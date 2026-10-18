@@ -41,10 +41,12 @@ props:
       enum:
         - default
         - inverted
+        - inherit
         - primary
       meta:enum:
         default: Default text
         inverted: Inverted text
+        inherit: Inherit from the surrounding zone
         primary: Primary
       examples:
         - default

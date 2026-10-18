@@ -82,3 +82,24 @@ props:
       type: string
       title: Link
       format: uri-reference
+    highlight_text:
+      type: string
+      title: Highlighted text
+      description: A phrase inside the heading to colour with the highlight colour. Must match the heading text exactly. Leave empty for no highlight.
+      examples:
+        - Bundle name
+    highlight_color:
+      type: string
+      title: Highlight colour
+      description: Token colour for the highlighted phrase. Use accent only on a dark or primary background.
+      enum:
+        - accent
+        - primary
+        - secondary
+      meta:enum:
+        accent: Accent
+        primary: Primary
+        secondary: Secondary
+      default: accent
+      examples:
+        - accent
