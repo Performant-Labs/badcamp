@@ -1,0 +1,2200 @@
+{
+ "360": {
+  "htmlClass": " js",
+  "overflow": {
+   "scrollWidth": 360,
+   "innerWidth": 360,
+   "offenders": []
+  },
+  "m": {
+   "extra": {
+    "h2ToIntroGap": 16,
+    "buttonsToPanelGap": 272,
+    "statToPanelGap": 32,
+    "statCentreVsCopyCentre": 321,
+    "heroContent": [
+     16,
+     344
+    ],
+    "perksContent": [
+     16,
+     344
+    ],
+    "h1LineTexts": [
+     "Give $100 or",
+     "more. Get the",
+     "[Bundle name] ."
+    ],
+    "divider": {
+     "borderTop": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.3)",
+     "w": 264
+    },
+    "sectionBgs": [
+     "rgb(0, 118, 168)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)"
+    ],
+    "mainBottomGap": 72
+   },
+   "sections": [
+    {
+     "x": 0,
+     "y": 60,
+     "w": 360,
+     "h": 730
+    },
+    {
+     "x": 0,
+     "y": 790,
+     "w": 360,
+     "h": 190
+    },
+    {
+     "x": 0,
+     "y": 980,
+     "w": 360,
+     "h": 1594
+    },
+    {
+     "x": 0,
+     "y": 2574,
+     "w": 360,
+     "h": 397
+    }
+   ],
+   "hero": {
+    "box": {
+     "x": 0,
+     "y": 60,
+     "w": 360,
+     "h": 730
+    },
+    "h1": {
+     "x": 16,
+     "y": 142,
+     "w": 328,
+     "h": 120,
+     "fam": "Lexend",
+     "size": "40px",
+     "weight": "600",
+     "lh": "40px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "h1lines": 3,
+    "highlight": {
+     "color": "rgb(255, 255, 255)",
+     "x": 129,
+     "y": 177,
+     "w": 0,
+     "h": 50
+    },
+    "eyebrow": {
+     "x": 16,
+     "y": 100,
+     "w": 248,
+     "h": 26,
+     "radius": "32px",
+     "bg": "rgb(194, 61, 20)",
+     "border": "rgba(0, 0, 0, 0) 1px",
+     "fam": "Lexend",
+     "size": "14px",
+     "weight": "400",
+     "lh": "14px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "sentence": {
+     "fam": "Inter",
+     "size": "18px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "buttons": [
+     {
+      "text": "Donate $100",
+      "x": 16,
+      "y": 375,
+      "w": 162,
+      "h": 47,
+      "bg": "rgb(253, 211, 98)",
+      "color": "rgb(61, 61, 61)",
+      "border": "rgb(61, 61, 61) 0px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "500",
+      "lh": "22.5px",
+      "ls": "normal"
+     },
+     {
+      "text": "See the six perks",
+      "x": 16,
+      "y": 438,
+      "w": 200,
+      "h": 49,
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "border": "rgb(255, 255, 255) 1px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "500",
+      "lh": "22.5px",
+      "ls": "normal"
+     }
+    ],
+    "stat": {
+     "x": 68,
+     "y": 502,
+     "w": 224,
+     "h": 224,
+     "radius": "3.35544e+07px",
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "value": {
+      "fam": "Lexend",
+      "size": "48px",
+      "weight": "700",
+      "lh": "48px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     },
+     "label": {
+      "fam": "Lexend",
+      "size": "16px",
+      "weight": "600",
+      "lh": "24px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     }
+    }
+   },
+   "panel": {
+    "x": 16,
+    "y": 758,
+    "w": 328,
+    "h": 198,
+    "bg": "rgb(255, 255, 255)",
+    "border": "rgb(204, 204, 204) 1px",
+    "radius": "12px",
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 1px, rgba(0, 0, 0, 0.1) 0px 4px 6px -2px",
+    "overlapPx": 32,
+    "h2": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "p": {
+     "fam": "Inter",
+     "size": "16px",
+     "weight": "400",
+     "lh": "24px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "perks": {
+    "h2": {
+     "x": 16,
+     "y": 1004,
+     "w": 217,
+     "h": 42,
+     "fam": "Lexend",
+     "size": "32px",
+     "weight": "600",
+     "lh": "42px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "intro": {
+     "fam": "Inter",
+     "size": "16px",
+     "weight": "400",
+     "lh": "24px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "cols": 1,
+    "gridGap": "16px/16px",
+    "cards": [
+     {
+      "x": 16,
+      "y": 1134,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     },
+     {
+      "x": 16,
+      "y": 1370,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     },
+     {
+      "x": 16,
+      "y": 1606,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     },
+     {
+      "x": 16,
+      "y": 1842,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     },
+     {
+      "x": 16,
+      "y": 2078,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     },
+     {
+      "x": 16,
+      "y": 2314,
+      "w": 328,
+      "h": 220,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "24px"
+     }
+    ],
+    "tile": {
+     "x": 41,
+     "y": 1159,
+     "w": 48,
+     "h": 48,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(0, 118, 168)",
+     "radius": "6px"
+    },
+    "eyebrow": {
+     "fam": "Lexend",
+     "size": "12px",
+     "weight": "600",
+     "lh": "18px",
+     "ls": "0.6px",
+     "color": "oklab(0.360021 0.0000163913 0.00000724196 / 0.8)"
+    },
+    "h3": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "text": {
+     "fam": "Inter",
+     "size": "16px",
+     "weight": "400",
+     "lh": "24px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "closing": {
+    "x": 16,
+    "y": 2574,
+    "w": 328,
+    "h": 357,
+    "bg": "rgb(0, 118, 168)",
+    "radius": "12px",
+    "pad": "32px",
+    "h2": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "texts": [
+     {
+      "t": "Any gift of $100 or more includes all si",
+      "fam": "Inter",
+      "size": "16px",
+      "weight": "400",
+      "lh": "24px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[Tax-deductibility statement, if applica",
+      "fam": "Inter",
+      "size": "12px",
+      "weight": "400",
+      "lh": "18px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[How and when perks are delivered after ",
+      "fam": "Inter",
+      "size": "12px",
+      "weight": "400",
+      "lh": "18px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     }
+    ],
+    "button": {
+     "x": 48,
+     "y": 2750,
+     "w": 113,
+     "h": 47,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "fam": "Lexend",
+     "size": "18px",
+     "weight": "500",
+     "lh": "22.5px",
+     "ls": "normal"
+    }
+   }
+  },
+  "contrast": [
+   {
+    "text": "OPTIONAL ATTENDEE DONATION",
+    "fg": "#ffffff",
+    "bg": "#c23d14",
+    "ratio": 5.29,
+    "size": 14,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Give $100 or more. Get the [Bund",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 40,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Bundle name]",
+    "fg": "#fdd362",
+    "bg": "#0076a8",
+    "ratio": 3.53,
+    "size": 40,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One sentence on what your donat",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 18,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate $100",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "See the six perks",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "$100+",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 48,
+    "weight": 700,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "unlocks 6 perks",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 16,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Where your donation goes",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Two or three sentences on what ",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "What you get",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 32,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Six thank-yous for every donatio",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 1",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 2",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 3",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 4",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 5",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 6",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate and claim your bundle",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Any gift of $100 or more include",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Tax-deductibility statement, if",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 12,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[How and when perks are delivere",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 12,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   }
+  ]
+ },
+ "768": {
+  "htmlClass": " js",
+  "overflow": {
+   "scrollWidth": 768,
+   "innerWidth": 768,
+   "offenders": []
+  },
+  "m": {
+   "extra": {
+    "h2ToIntroGap": 16,
+    "buttonsToPanelGap": 40,
+    "statToPanelGap": 82,
+    "statCentreVsCopyCentre": 0,
+    "heroContent": [
+     16,
+     752
+    ],
+    "perksContent": [
+     16,
+     752
+    ],
+    "h1LineTexts": [
+     "Give $100 or more.",
+     "Get the [Bundle",
+     "name] ."
+    ],
+    "divider": {
+     "borderTop": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.3)",
+     "w": 672
+    },
+    "sectionBgs": [
+     "rgb(0, 118, 168)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)"
+    ],
+    "mainBottomGap": 84
+   },
+   "sections": [
+    {
+     "x": 0,
+     "y": 72,
+     "w": 768,
+     "h": 453
+    },
+    {
+     "x": 0,
+     "y": 525,
+     "w": 768,
+     "h": 152
+    },
+    {
+     "x": 0,
+     "y": 676,
+     "w": 768,
+     "h": 959
+    },
+    {
+     "x": 0,
+     "y": 1635,
+     "w": 768,
+     "h": 344
+    }
+   ],
+   "hero": {
+    "box": {
+     "x": 0,
+     "y": 72,
+     "w": 768,
+     "h": 453
+    },
+    "h1": {
+     "x": 16,
+     "y": 166,
+     "w": 475,
+     "h": 144,
+     "fam": "Lexend",
+     "size": "48px",
+     "weight": "600",
+     "lh": "48px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "h1lines": 3,
+    "highlight": {
+     "color": "rgb(255, 255, 255)",
+     "x": 474,
+     "y": 160,
+     "w": 0,
+     "h": 60
+    },
+    "eyebrow": {
+     "x": 16,
+     "y": 124,
+     "w": 248,
+     "h": 26,
+     "radius": "32px",
+     "bg": "rgb(194, 61, 20)",
+     "border": "rgba(0, 0, 0, 0) 1px",
+     "fam": "Lexend",
+     "size": "14px",
+     "weight": "400",
+     "lh": "14px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "sentence": {
+     "fam": "Inter",
+     "size": "20px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "buttons": [
+     {
+      "text": "Donate $100",
+      "x": 16,
+      "y": 396,
+      "w": 162,
+      "h": 47,
+      "bg": "rgb(253, 211, 98)",
+      "color": "rgb(61, 61, 61)",
+      "border": "rgb(61, 61, 61) 0px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "500",
+      "lh": "22.5px",
+      "ls": "normal"
+     },
+     {
+      "text": "See the six perks",
+      "x": 194,
+      "y": 396,
+      "w": 200,
+      "h": 49,
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "border": "rgb(255, 255, 255) 1px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "500",
+      "lh": "22.5px",
+      "ls": "normal"
+     }
+    ],
+    "stat": {
+     "x": 515,
+     "y": 166,
+     "w": 237,
+     "h": 237,
+     "radius": "3.35544e+07px",
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "value": {
+      "fam": "Lexend",
+      "size": "60px",
+      "weight": "700",
+      "lh": "60px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     },
+     "label": {
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "600",
+      "lh": "27px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     }
+    }
+   },
+   "panel": {
+    "x": 16,
+    "y": 485,
+    "w": 736,
+    "h": 164,
+    "bg": "rgb(255, 255, 255)",
+    "border": "rgb(204, 204, 204) 1px",
+    "radius": "12px",
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 1px, rgba(0, 0, 0, 0.1) 0px 4px 6px -2px",
+    "overlapPx": 40,
+    "h2": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "p": {
+     "fam": "Inter",
+     "size": "18px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "perks": {
+    "h2": {
+     "x": 16,
+     "y": 704,
+     "w": 271,
+     "h": 48,
+     "fam": "Lexend",
+     "size": "40px",
+     "weight": "600",
+     "lh": "48px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "intro": {
+     "fam": "Inter",
+     "size": "18px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "cols": 2,
+    "gridGap": "24px/24px",
+    "cards": [
+     {
+      "x": 16,
+      "y": 827,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 396,
+      "y": 827,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 16,
+      "y": 1087,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 396,
+      "y": 1087,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 16,
+      "y": 1347,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 396,
+      "y": 1347,
+      "w": 356,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     }
+    ],
+    "tile": {
+     "x": 49,
+     "y": 860,
+     "w": 48,
+     "h": 48,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(0, 118, 168)",
+     "radius": "6px"
+    },
+    "eyebrow": {
+     "fam": "Lexend",
+     "size": "12px",
+     "weight": "600",
+     "lh": "18px",
+     "ls": "0.6px",
+     "color": "oklab(0.360021 0.0000163913 0.00000724196 / 0.8)"
+    },
+    "h3": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "text": {
+     "fam": "Inter",
+     "size": "16px",
+     "weight": "400",
+     "lh": "24px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "closing": {
+    "x": 16,
+    "y": 1635,
+    "w": 736,
+    "h": 292,
+    "bg": "rgb(0, 118, 168)",
+    "radius": "12px",
+    "pad": "32px",
+    "h2": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "texts": [
+     {
+      "t": "Any gift of $100 or more includes all si",
+      "fam": "Inter",
+      "size": "18px",
+      "weight": "400",
+      "lh": "27px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[Tax-deductibility statement, if applica",
+      "fam": "Inter",
+      "size": "14px",
+      "weight": "400",
+      "lh": "21px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[How and when perks are delivered after ",
+      "fam": "Inter",
+      "size": "14px",
+      "weight": "400",
+      "lh": "21px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     }
+    ],
+    "button": {
+     "x": 48,
+     "y": 1758,
+     "w": 113,
+     "h": 47,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "fam": "Lexend",
+     "size": "18px",
+     "weight": "500",
+     "lh": "22.5px",
+     "ls": "normal"
+    }
+   }
+  },
+  "contrast": [
+   {
+    "text": "OPTIONAL ATTENDEE DONATION",
+    "fg": "#ffffff",
+    "bg": "#c23d14",
+    "ratio": 5.29,
+    "size": 14,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Give $100 or more. Get the [Bund",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 48,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Bundle name]",
+    "fg": "#fdd362",
+    "bg": "#0076a8",
+    "ratio": 3.53,
+    "size": 48,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One sentence on what your donat",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 20,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate $100",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "See the six perks",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "$100+",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 60,
+    "weight": 700,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "unlocks 6 perks",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Where your donation goes",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Two or three sentences on what ",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 18,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "What you get",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 40,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Six thank-yous for every donatio",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 18,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 1",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 2",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 3",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 4",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 5",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 6",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate and claim your bundle",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Any gift of $100 or more include",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 18,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Tax-deductibility statement, if",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 14,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[How and when perks are delivere",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 14,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   }
+  ]
+ },
+ "1280": {
+  "htmlClass": " js",
+  "overflow": {
+   "scrollWidth": 1280,
+   "innerWidth": 1280,
+   "offenders": []
+  },
+  "m": {
+   "extra": {
+    "h2ToIntroGap": 16,
+    "buttonsToPanelGap": 48,
+    "statToPanelGap": 61,
+    "statCentreVsCopyCentre": 0,
+    "heroContent": [
+     78,
+     1202
+    ],
+    "perksContent": [
+     78,
+     1202
+    ],
+    "h1LineTexts": [
+     "Give $100 or more.",
+     "Get the [Bundle name] ."
+    ],
+    "divider": {
+     "borderTop": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.3)",
+     "w": 872
+    },
+    "sectionBgs": [
+     "rgb(0, 118, 168)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)",
+     "rgb(238, 238, 238)"
+    ],
+    "mainBottomGap": 96
+   },
+   "sections": [
+    {
+     "x": 0,
+     "y": 72,
+     "w": 1280,
+     "h": 475
+    },
+    {
+     "x": 0,
+     "y": 547,
+     "w": 1280,
+     "h": 158
+    },
+    {
+     "x": 0,
+     "y": 705,
+     "w": 1280,
+     "h": 735
+    },
+    {
+     "x": 0,
+     "y": 1440,
+     "w": 1280,
+     "h": 379
+    }
+   ],
+   "hero": {
+    "box": {
+     "x": 0,
+     "y": 72,
+     "w": 1280,
+     "h": 475
+    },
+    "h1": {
+     "x": 78,
+     "y": 180,
+     "w": 697,
+     "h": 120,
+     "fam": "Lexend",
+     "size": "60px",
+     "weight": "600",
+     "lh": "60px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "h1lines": 2,
+    "highlight": {
+     "color": "rgb(255, 255, 255)",
+     "x": 78,
+     "y": 240,
+     "w": 697,
+     "h": 0
+    },
+    "eyebrow": {
+     "x": 78,
+     "y": 136,
+     "w": 252,
+     "h": 28,
+     "radius": "32px",
+     "bg": "rgb(194, 61, 20)",
+     "border": "rgba(0, 0, 0, 0) 1px",
+     "fam": "Lexend",
+     "size": "14px",
+     "weight": "400",
+     "lh": "14px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "sentence": {
+     "fam": "Inter",
+     "size": "24px",
+     "weight": "400",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "buttons": [
+     {
+      "text": "Donate $100",
+      "x": 78,
+      "y": 396,
+      "w": 174,
+      "h": 53,
+      "bg": "rgb(253, 211, 98)",
+      "color": "rgb(61, 61, 61)",
+      "border": "rgb(61, 61, 61) 0px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "20px",
+      "weight": "500",
+      "lh": "25px",
+      "ls": "normal"
+     },
+     {
+      "text": "See the six perks",
+      "x": 269,
+      "y": 396,
+      "w": 217,
+      "h": 55,
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "border": "rgb(255, 255, 255) 1px",
+      "radius": "32px",
+      "fam": "Lexend",
+      "size": "20px",
+      "weight": "500",
+      "lh": "25px",
+      "ls": "normal"
+     }
+    ],
+    "stat": {
+     "x": 876,
+     "y": 149,
+     "w": 288,
+     "h": 288,
+     "radius": "3.35544e+07px",
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "value": {
+      "fam": "Lexend",
+      "size": "72px",
+      "weight": "700",
+      "lh": "72px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     },
+     "label": {
+      "fam": "Lexend",
+      "size": "18px",
+      "weight": "600",
+      "lh": "27px",
+      "ls": "normal",
+      "color": "rgb(61, 61, 61)"
+     }
+    }
+   },
+   "panel": {
+    "x": 172,
+    "y": 499,
+    "w": 936,
+    "h": 174,
+    "bg": "rgb(255, 255, 255)",
+    "border": "rgb(204, 204, 204) 1px",
+    "radius": "12px",
+    "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 1px, rgba(0, 0, 0, 0.1) 0px 4px 6px -2px",
+    "overlapPx": 48,
+    "h2": {
+     "fam": "Lexend",
+     "size": "32px",
+     "weight": "600",
+     "lh": "42px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "p": {
+     "fam": "Inter",
+     "size": "20px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "perks": {
+    "h2": {
+     "x": 78,
+     "y": 737,
+     "w": 325,
+     "h": 52,
+     "fam": "Lexend",
+     "size": "48px",
+     "weight": "600",
+     "lh": "51.9998px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "intro": {
+     "fam": "Inter",
+     "size": "20px",
+     "weight": "400",
+     "lh": "27px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "cols": 3,
+    "gridGap": "32px/32px",
+    "cards": [
+     {
+      "x": 78,
+      "y": 872,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 463,
+      "y": 872,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 849,
+      "y": 872,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 78,
+      "y": 1140,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 463,
+      "y": 1140,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     },
+     {
+      "x": 849,
+      "y": 1140,
+      "w": 353,
+      "h": 236,
+      "bg": "rgb(255, 255, 255)",
+      "border": "rgb(204, 204, 204) 1px",
+      "radius": "12px",
+      "pad": "32px"
+     }
+    ],
+    "tile": {
+     "x": 111,
+     "y": 905,
+     "w": 48,
+     "h": 48,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(0, 118, 168)",
+     "radius": "6px"
+    },
+    "eyebrow": {
+     "fam": "Lexend",
+     "size": "12px",
+     "weight": "600",
+     "lh": "18px",
+     "ls": "0.6px",
+     "color": "oklab(0.360021 0.0000163913 0.00000724196 / 0.8)"
+    },
+    "h3": {
+     "fam": "Lexend",
+     "size": "24px",
+     "weight": "600",
+     "lh": "31.9992px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    },
+    "text": {
+     "fam": "Inter",
+     "size": "16px",
+     "weight": "400",
+     "lh": "24px",
+     "ls": "normal",
+     "color": "rgb(61, 61, 61)"
+    }
+   },
+   "closing": {
+    "x": 172,
+    "y": 1440,
+    "w": 936,
+    "h": 315,
+    "bg": "rgb(0, 118, 168)",
+    "radius": "12px",
+    "pad": "32px",
+    "h2": {
+     "fam": "Lexend",
+     "size": "32px",
+     "weight": "600",
+     "lh": "42px",
+     "ls": "normal",
+     "color": "rgb(255, 255, 255)"
+    },
+    "texts": [
+     {
+      "t": "Any gift of $100 or more includes all si",
+      "fam": "Inter",
+      "size": "20px",
+      "weight": "400",
+      "lh": "27px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[Tax-deductibility statement, if applica",
+      "fam": "Inter",
+      "size": "16px",
+      "weight": "400",
+      "lh": "24px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     },
+     {
+      "t": "[How and when perks are delivered after ",
+      "fam": "Inter",
+      "size": "16px",
+      "weight": "400",
+      "lh": "24px",
+      "ls": "normal",
+      "color": "rgb(255, 255, 255)"
+     }
+    ],
+    "button": {
+     "x": 204,
+     "y": 1573,
+     "w": 120,
+     "h": 53,
+     "bg": "rgb(253, 211, 98)",
+     "color": "rgb(61, 61, 61)",
+     "fam": "Lexend",
+     "size": "20px",
+     "weight": "500",
+     "lh": "25px",
+     "ls": "normal"
+    }
+   }
+  },
+  "contrast": [
+   {
+    "text": "OPTIONAL ATTENDEE DONATION",
+    "fg": "#ffffff",
+    "bg": "#c23d14",
+    "ratio": 5.29,
+    "size": 14,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Give $100 or more. Get the [Bund",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 60,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Bundle name]",
+    "fg": "#fdd362",
+    "bg": "#0076a8",
+    "ratio": 3.53,
+    "size": 60,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One sentence on what your donat",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 24,
+    "weight": 400,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Donate $100",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 20,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "See the six perks",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 20,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "$100+",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 72,
+    "weight": 700,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "unlocks 6 perks",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 18,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Where your donation goes",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 32,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[Two or three sentences on what ",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 20,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "What you get",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 48,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Six thank-yous for every donatio",
+    "fg": "#3d3d3d",
+    "bg": "#eeeeee",
+    "ratio": 9.36,
+    "size": 20,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 1",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 2",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 3",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 4",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 5",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Perk 6",
+    "fg": "#646464",
+    "bg": "#ffffff",
+    "ratio": 5.94,
+    "size": 12,
+    "weight": 600,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Perk title]",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 24,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "[One or two sentences describing",
+    "fg": "#3d3d3d",
+    "bg": "#ffffff",
+    "ratio": 10.86,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate and claim your bundle",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 32,
+    "weight": 600,
+    "need": 3,
+    "pass": true
+   },
+   {
+    "text": "Any gift of $100 or more include",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 20,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "Donate",
+    "fg": "#3d3d3d",
+    "bg": "#fdd362",
+    "ratio": 7.59,
+    "size": 20,
+    "weight": 500,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[Tax-deductibility statement, if",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   },
+   {
+    "text": "[How and when perks are delivere",
+    "fg": "#ffffff",
+    "bg": "#0076a8",
+    "ratio": 5.05,
+    "size": 16,
+    "weight": 400,
+    "need": 4.5,
+    "pass": true
+   }
+  ]
+ }
+}

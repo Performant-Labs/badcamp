@@ -50,3 +50,10 @@ props:
         primary: Primary
       examples:
         - default
+    divider_above:
+      type: boolean
+      title: Divider above
+      description: Draws a thin rule above the text, in the surrounding zone's foreground colour. Use it to set off small notes. (A raw hr in the rich text is stripped by the text format.)
+      default: false
+      examples:
+        - false

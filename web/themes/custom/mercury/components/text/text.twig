@@ -33,6 +33,10 @@
         'text-xl': 'text-xl md:text-2xl xl:text-3xl',
         'text-2xl': 'text-2xl md:text-3xl xl:text-4xl',
         'text-3xl': 'text-3xl md:text-4xl xl:text-5xl'
+      },
+      dividerAbove: {
+        yes: 'w-full border-t border-current/30 pt-4',
+        no: ''
       }
     }
   )
@@ -41,7 +45,8 @@
 {% set text_classes =
   text_component.apply({
     textColor: text_text_color,
-    textSize: text_text_size
+    textSize: text_text_size,
+    dividerAbove: divider_above|default(false) ? 'yes' : 'no'
   })
 %}
 

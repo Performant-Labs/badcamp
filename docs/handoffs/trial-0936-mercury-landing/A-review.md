@@ -341,3 +341,169 @@ The token is read by exactly two generated utilities, `focus-visible:ring-ring` 
 
 ## Round 3 notes for F
 None. PASS.
+
+---
+
+# Round 4 (re-review after F's rework round 3: S's R1 to R6, H1, H2)
+
+Inputs: `F-handoff.md` "Rework round 3", `S-audit.md`, the 13 new log entries in `docs/css-change-log.md` (37 entries), the re-read profile lines (orange shade, content width), and the uncommitted diff on top of `52978de` (27 files). Judged against the current adapter text. Read-only; I did not toggle the colour scheme or change config.
+
+## Round 4 verdict: PASS (0 BLOCK, 2 WARN, 3 INFO)
+
+Every change is at a defensible layer and additive where it touches an existing component. Two WARNs: one is a layering question the operator should decide (W10, the container radius), one is a robustness defect in the new `heading` markup (W11).
+
+## R4.1 Per-change table (every new entry)
+
+| # | Change (log entry) | F's layer | My layer | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | `--secondary-600: #c23d14` in `web/theme.css` `:root` and `.dark` | L1 | L1 | PASS | H2. A brand shade with no Mercury slot; the profile now says where it goes ("the background wherever small text sits on orange"). Changing `--secondary` itself is rightly ruled out (the profile keeps `#d44418` as the secondary). Values recomputed: white on `#c23d14` 5.29:1, on `#d44418` 4.53:1. |
+| 2 | `--secondary-600` in `src/theme.css` (both blocks) | L1 | L1 | PASS | Fallback edit of the three-edit rule. |
+| 3 | `--color-secondary-600` in `@theme inline` | L2 | L2 | PASS | Third edit; built CSS has the `bg-secondary-600` utility. |
+| 4 | `badge` `secondary` style: `bg-secondary` to `bg-secondary-600` (hover follows) | L4 | L4 | PASS (intended site-wide L4) | The profile rule is about small text on orange and badge text is always small, so the variant map is the right layer, not the instance. Other consumers: only this page's one badge. |
+| 5 | `button` `outline` variant (`border border-current bg-transparent text-inherit hover:bg-current/10`) | L4 | L4 | PASS | No stock variant is transparent; a new additive variant is the adapter's L4 rule, and `currentColor` keeps it zone-agnostic. Uses a scale step and the zone's foreground, no colour. Opaque `ring-ring` focus inherited. |
+| 6 | `heading` `break_after` (empty `span.lg:block`) | L4 | L4 | PASS layer; WARN defect (W11) | Additive optional prop, mobile-first (`lg:` only). Unused-case output is byte-identical (R4.2). Defect below. |
+| 7 | `section` `padding_block_start/end` value `96` | L4 | L4 | PASS | The L3 prop is exhausted (enum stopped at 64), so the next step is an additive enum value, the same scale as the existing margin `96`. Byte-identical for every stock value (6,000 combinations). |
+| 8 | `text` `divider_above` (`w-full border-t border-current/30 pt-4`) | L4 | L4 | PASS | A raw `<hr>` is stripped by the text format and Mercury has no divider component, so a feature on `text` is the lowest-impact option; `currentColor` + `/30` opacity keeps it token-free and zone-agnostic. Default off, byte-identical (also with `false` and `null`). A new divider SDC (L5) would also have been defensible. |
+| 9 | `card-icon` `border_radius: container` (`rounded-lg`) | L4 | L4 | PASS layer; see W10 | Additive enum value. W10 questions whether the value should exist as `rounded-lg`, not whether L4 is right. |
+| 10 | `panel` `rounded-xl` to `rounded-lg` | L5 | L5 | PASS layer; see W10 | Own new component. |
+| 11 | `stat-badge` wrapper `items-center` | L5 | L5 | PASS | R1. The aspect-ratio box was stretched by the parent flex's default `align-items`; fixing it where the ratio is declared is correct. |
+| 12 | "Radius trace" entry (no token change) | L1 | see W10 | WARN | See W10. |
+| 13 | Instance props: `width: 90%` (hero, perks), closing `background_color: muted`, margins 0, `padding_block_end: 64`, perks intro wrapped in a `group`, `break_after`, `variant: outline`, `divider_above`, `text-xs`, `radius: lg` | L3 | L3 | PASS | All choose existing or the additive props above. H1 uses Mercury's existing `section` `width` and leaves the site container (badcamp#10) alone, as the profile line requires; only inner content narrows (backgrounds stay full-bleed). R5's `group` wrapper for the intro gap avoids a site-wide `section` header change. I read the recipe: no raw colours, no `style`, no arbitrary values, no `on-primary`. |
+
+## R4.2 Additivity: render-diff harness against `52978de` and `3e99366`
+
+Same harness (baseline Twig from `git archive`, `twig/twig` plus the `cva` extension), now also covering `section`. Every enum and boolean of each baseline schema (capped at 6,000), crossed with string samples; new-prop-unset behaviour tested explicitly. "Unexplained" is the count left after normalising the logged changes back.
+
+```
+baseline 52978de                      baseline 3e99366 (pristine 1.0.5)
+component  combos  diff  unexplained  combos  diff  unexplained
+heading    10800     0       0         3600     0       0
+text          28     0       0           21     0       0
+card-icon   9720     0       0         9720     0       0
+grid         234     0       0          216     0       0
+group       6000     0       0         6000  6000       0   (logged bg pairing)
+button      2304     0       0         2304  2304       0   (logged radius + ring)
+badge         32    16       0           16    16       0   (style=secondary only: bg-secondary-600, logged)
+section     6000     0       0         6000     0       0
+```
+
+- The only change in existing-component output since `52978de` is the `badge` `secondary` style fill (16 of 32 combinations, exactly the `style: secondary` ones). All other existing components are byte-identical for every baseline value.
+- New props, unset: `text` `divider_above` unset, `false` and `null` all identical to before; `heading` with `break_after` and `highlight_text` empty identical (10,800 combinations).
+- New props, set: `divider_above` emits `w-full border-t border-current/30 pt-4`; `break_after` emits `<span class="lg:block"></span>` after the phrase; combined with the highlight the page's headline renders `Give $100 or more.<span class="lg:block"></span> Get the <span class="text-accent">[Bundle name]</span>.`, and HTML in the heading text stays escaped.
+- Behaviour change inside the new feature: highlight now replaces every occurrence of the phrase, not only the first (logged). Not a stock behaviour.
+
+## R4.3 Gate and build
+
+- `npm run lint:css` (Stylelint 16.26.1): exit 0, no output. Negative controls on scratch copies: `.badge { background: #c23d14; }` in `theme.css` fails `property-allowed-list`; `html body div.a .b .c .d { margin: 0 !important; }` in `main.css` fails four rules (`selector-max-compound-selectors`, `selector-max-specificity`, `selector-max-type`, `declaration-no-important`). Exit 2 both.
+- Build in sync: rebuild with the theme's own `tailwindcss --input ./src/main.css --minify` to a scratch path is byte-identical to `build/main.min.css` (70,837 B, F's figure). The new utilities are in the build: `bg-secondary-600`, `border-current`, `bg-transparent`, `hover:bg-current/10`, `border-current/30`, `lg:block`, `pt-16`, `md:pb-20`, `xl:pb-24`. `prettier --check components src` passes.
+- `/perks-trial` serves 200; Home serves 200; no `<hr>` in the served page (as the log says).
+
+## R4.4 Sizing the L1 changes by consumers
+
+- **`--secondary-600`** is read by one utility, `bg-secondary-600` (and its `/90` hover), emitted only for the `badge` `secondary` style. Served counts: `/perks-trial` 1 (the hero eyebrow), `/` 0. The `secondary` zone props on `section` and `group` still use `bg-secondary` (`#d44418`); none is used on this site, but they would carry small text on 4.53:1 if ever used (I10).
+- **`--radius` and `--radius-pill`:** no token change this round. Radius consumers in the served HTML: `rounded-lg` 8 on `/perks-trial` (6 perk cards, overlap card, closing group) and 0 on `/`; `rounded-xl` and `rounded-2xl` 0 on both.
+
+## R4.5 Findings
+
+### WARN
+
+- **W10 The container radius is fixed with three per-consumer edits where one L1 value would do.** The trace in the log shows `rounded-xl` = `--radius` + 4px, so with the new `--radius: 0.75rem` Mercury's `xl` containers render 16px. F kept `--radius` at 0.75rem and compensated: `group` `radius: lg`, `panel` `rounded-lg`, and a new `card-icon` value `container`. But Mercury's own scale already gives the brand's 0.75rem at `xl` when `--radius` is the **stock 0.5rem** (8px + 4px = 12px). I approved the `--radius: 0.75rem` L1 entry in round 1 on the assumption that "every container derives from it"; the R6c trace shows that assumption was only half true, and that was my miss as well as F's. The highest correct layer is to revert `--radius` to its stock 0.5rem, which delivers 12px on every stock `rounded-xl` container (`card`, `group` `xl`, `hero-side-by-side`, the new `panel` as first written) with no edit, and leaves only the `card-icon` value (its `medium` is a fixed `md:rounded-2xl`; it would need `rounded-xl`, not `rounded-lg`). Net: the `group` instance prop returns to its stock choice, the `panel` edit disappears, and the L1 deviation from stock goes away. Side effect to check before choosing it: `sm/md/lg` return to 4/6/8px for their consumers (the pill button is unaffected). This is a layering and over-engineering finding, not a rendering defect: the page is correct today (12px measured). Left as WARN for the operator because the shadcn reading ("`--radius` is the `lg`, i.e. the container") is also defensible and the current state is verified. If kept as is, the log's radius trace should record why the stock-`--radius` option was not taken.
+- **W11 `heading` `break_after` can corrupt the highlight markup.** The break and the highlight are two sequential `replace` calls on the string that already contains the highlight `<span>`, so a `break_after` phrase that matches text inside that markup splits the tag. Reproduced with the new Twig: heading "Get the text now", highlight "now", break after "text" renders `<span class="text<span class="lg:block"></span>-accent">`; break after "class" renders `<span class<span class="lg:block"></span>="text-accent">`. No script injection (all user text is escaped, the inserted markup is a fixed string), but the HTML is broken and the editor sees no warning. Contained for this page (its phrases are `Give $100 or more.` and `[Bundle name]`). Fix: do both replacements in a single `replace` call (Twig's `replace` is a single-pass `strtr`, which never rescans inserted text), or insert placeholders first. Note the single call needs a rule for overlapping phrases (the longer match wins).
+
+### INFO
+
+- **I10** `section` and `group` `background: secondary` zones still pair `#d44418` with white text (4.53:1), which falls short of the profile's "small text on orange" rule if a project ever uses them with small text. Not used here; the profile's rule applies "wherever", so a later story that uses the secondary zone should decide.
+- **I11** The explicit `group` wrapper for the perks intro (R5) puts presentation structure into content instead of the shared `section` header. Defensible and local, as the log says; revisit if a second page needs the same gap.
+- **I12** Unlogged mention: the recipe re-export is the page only (F deleted an accidental Home export); the file list under `recipes/` shows one page file. Fine.
+
+## R4.6 Adapter findings, round 4
+
+- **A12** Brand radius: when the profile gives a "container radius", compute which Mercury step yields it (`sm/md/lg/xl` are `--radius` -4, -2, 0, +4 px) and set `--radius` so that step matches, before adding per-consumer values. F's finding 3 lists which utilities equal the token; add "and choose the token value from the step your containers actually use (`xl` on most stock components)". This is the lesson of W10.
+- **A13** Markup built inside a Twig prop by string replacement must be a single `replace` pass (or placeholders), never sequential, or one phrase can match the other's inserted markup (W11).
+- **A14** F's finding 2 stands: the text format strips `<hr>`, so divider-like needs become component features. Worth a line in the reuse-gap list.
+
+## Round 4 notes for F
+Optional before commit: W11 (single-pass replace) is a small, local fix with a test case ("text"/"class" as `break_after`). W10 is the operator's call; if taken, it removes the `panel` edit, the `group` radius prop change and one L1 deviation.
+
+---
+
+# Round 5 (final re-review: W10 placement correction, W11 fix)
+
+Inputs: `F-handoff.md` "Rework round 4", the log (39 entries), the uncommitted diff on top of `52978de`. Read-only; the colour scheme was not touched.
+
+## Round 5 verdict: PASS (0 BLOCK, 0 WARN, 2 INFO). Final verdict for the cycle: PASS.
+
+## R5.1 Per-change table (round-4 entries)
+
+| # | Change | F's layer | My layer | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | `--radius` back to the stock `0.5rem` in `web/theme.css` (`:root` line 34, `.dark` line 84) | L1 | L1 | PASS | The placement correction I asked for in W10. Mercury derives `sm/md/lg/xl` as `--radius` -4/-2/0/+4 px, so stock `xl` is 12px, the brand container radius. The web-root file replaces Mercury's, so it must carry the value explicitly; it equals the stock `src/theme.css` (which was never changed: `git diff 3e99366` for `--radius` is empty). `--radius-pill` is separate and untouched. |
+| 2 | `panel` back to `rounded-xl` | L5 | L5 | PASS | Matches the committed `52978de` file byte for byte (no diff). |
+| 3 | `card-icon` `container` option removed | L4 | n/a | PASS | Enum, Twig and recipe inputs all back to `medium`. |
+| 4 | Closing `group` back to `radius: xl` (page input) | L3 | L3 | PASS | The stock choice; the recipe has `radius: xl` and no `container`. |
+| 5 | `card-icon` `border_radius: medium` `rounded-xl md:rounded-2xl` to `rounded-xl` | L4 (intended site-wide) | L4 | PASS | The one stock consumer that ignores the token scale (`2xl` is Tailwind's fixed 1rem). L1 cannot move it, L2 has no `--radius-2xl`, and an additive option would leave the default off the brand radius, so editing the variant map and logging it as intended site-wide is the right call. Blast radius verified: only `medium` differs (R5.2), existing uses are the page's 6 perk cards. |
+| 6 | Log: old `--radius -> 0.75rem` entry marked `[superseded by L50]` | n/a | n/a | PASS | Marked correctly: it keeps its provenance and original ruling, adds a "Superseded" line with the reason, and points at the live entry (line 50: `--radius ... 0.5rem (stock value restored)`, with trace and ruling). The `container`, `panel` and "Radius trace" entries are tagged `[removed]` with a reason. Only active entry for `--radius` is line 50. (The pointer is a line number, which will drift when the log is edited; harmless.) |
+| 7 | `heading` single-pass `replace` for highlight and break | L4 | L4 | PASS | W11 closed (R5.3). |
+
+## R5.2 Additivity: harness against `52978de` and `3e99366`
+
+Same harness and normalisations as round 4, plus the `card-icon` `medium` change normalised on the baseline side. Every baseline enum and boolean crossed with string samples (capped at 6,000 per component).
+
+```
+                        vs 52978de                   vs 3e99366 (pristine)
+component   combos  diff  unexplained    combos  diff  unexplained
+heading     10800     0       0           3600     0       0
+text           28     0       0             21     0       0
+card-icon    9720  3240       0           9720  3240       0   (one third = border_radius medium)
+grid          234     0       0            216     0       0
+group        6000     0       0           6000  6000       0   (logged bg pairing)
+button       2304     0       0           2304  2304       0   (logged radius + ring)
+badge          32    16       0             16    16       0   (style=secondary: logged -600 fill)
+section      6000     0       0           6000     0       0
+```
+
+- `card-icon` differs only for `border_radius: medium`; `small`, `large` and the other options are identical to both baselines (checked individually). The difference is exactly `md:rounded-2xl` removed.
+- Nothing else in an existing component moved this round. Against pristine Mercury, every remaining difference is a logged, intended change.
+
+## R5.3 W11: single-`replace` fix and edge cases
+
+The Twig now builds one map and calls `replace` once over the escaped text (a single `strtr` pass, longest key first, no rescan of inserted markup). When only one feature is on, the same key and value are written twice, which keeps the map static. Rendered with the real template:
+
+| Case | Result |
+|---|---|
+| Page headline (break + highlight, disjoint) | `Give $100 or more.<span class="lg:block"></span> Get the <span class="text-accent">[Bundle name]</span>.` |
+| Highlight only / break only / neither / empty strings / phrases not in the text | correct span, correct break, plain text, plain text, plain text |
+| **Previously corrupt:** break "text" with highlight "now" in "Get the text now" | `Get the text<span class="lg:block"></span> <span class="text-accent">now</span>` (intact) |
+| **Previously corrupt:** break "class" with highlight "now" in "A class act now" | `A class<span class="lg:block"></span> act <span class="text-accent">now</span>` (intact) |
+| Break contains highlight / highlight contains break / same phrase for both | longest match wins: break only / highlight only / break only. No nested or split markup. |
+| HTML-special characters (`&`, `<b>`, quotes) | all escaped (`&amp;`, `&lt;b&gt;`, `&quot;`) inside and outside the spans |
+| Numeric-like phrases ("10", "20") | correct (no key renumbering, thanks to the duplicate-key form) |
+| Repeated highlight phrase | every occurrence wrapped (logged behaviour) |
+| With `url` | markup sits inside the `<a>`, still valid |
+
+Unused case: `heading` is byte-identical to both baselines across 10,800 and 3,600 combinations. Remaining nuance (INFO I13): when the two phrases overlap, the longer one silently wins and the other feature is dropped for that heading; it is documented in the Twig comment and is the correct trade-off for a single-pass replace.
+
+## R5.4 Gate, build, serve
+
+- `npm run lint:css` (Stylelint 16.26.1): exit 0, no output. Negative control on scratch copies: `.card { border-radius: 12px; }` in `theme.css` fails `property-allowed-list`; `@import` in `fonts.css` fails `at-rule-allowed-list`; exit 2.
+- Build in sync: rebuild to a scratch path is byte-identical to `build/main.min.css` (70,837 B, F's figure). `prettier --check components src` passes.
+- `/` and `/perks-trial` return 200; served `theme.css` shows `--radius: 0.5rem` and `--radius-pill: 2rem` in both blocks.
+- Sizing the L1 `--radius` change by consumers (it returns to stock, so it is a reduction): `/perks-trial` has `rounded-xl` 8 (6 perk cards, overlap panel, closing group) and `rounded-md` 8 (icon tiles), `rounded-2xl` 0; `/` has `rounded-md` 2 and `rounded-xl` 0. The home page and chrome are back on the stock scale, and no consumer other than `card-icon` `medium` needed a component edit.
+
+## R5.5 Findings
+
+- **I13 (INFO)** See above: overlapping `highlight_text` / `break_after` phrases resolve to the longer one.
+- **I14 (INFO)** Round-4 INFO items I10 (secondary zones still `#d44418`) and I11 (explicit `group` wrapper for the perks intro) stand unchanged and need no action for this cycle.
+
+## R5.6 Adapter findings, final
+
+- **A12/A13/A14** from round 4 are confirmed by this round's outcome: choose the Mercury step that yields the brand radius and leave `--radius` at stock (the adapter should say so and name `card-icon` `medium` as the only stock consumer that ignores the scale); build multi-phrase markup in Twig with one `replace` pass; the text format strips `<hr>`.
+- **A15** Lesson from W10 for the review process itself: when a log trace shows a token edit needing per-consumer compensations, re-ask whether the token value should simply be stock before accepting the compensations. The placement procedure's step 1 ("does it apply everywhere the token is used?") should add: and does the stock scale already produce the brand value at some step?
+
+## Summary of the cycle (A)
+
+- Round 1: PASS with 9 WARN. Round 2: PASS. Round 3 (`--ring`): PASS. Round 4: PASS with 2 WARN (W10 layering of the container radius, W11 break markup). Round 5: both closed, PASS.
+- Every CSS change in the tree is logged, traced and at the highest correct layer; all existing-component edits are additive or logged as intended site-wide L4; the Stylelint gate is clean at the pinned 16.26.1; the build is in sync.
+
+## Round 5 notes for F
+None. PASS.

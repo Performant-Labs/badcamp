@@ -16,11 +16,13 @@ props:
         - secondary
         - primary-inverted
         - secondary-inverted
+        - outline
       meta:enum:
         primary: Primary
         secondary: Secondary
         primary-inverted: Primary inverted
         secondary-inverted: Secondary inverted
+        outline: Outline (zone foreground)
       examples:
         - primary
     label:

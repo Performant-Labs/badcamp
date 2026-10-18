@@ -20,9 +20,9 @@ default:
       inputs:
         columns: 67-33
         padding_block_start: '64'
-        padding_block_end: '64'
+        padding_block_end: '96'
         background_color: primary
-        width: 100%
+        width: 90%
         mobile_columns: '1'
         margin_block_start: '0'
         margin_block_end: '0'
@@ -62,6 +62,7 @@ default:
         align: left
         highlight_text: '[Bundle name]'
         highlight_color: accent
+        break_after: 'Give $100 or more.'
     -
       parent_uuid: 946e342f-883f-4267-b33e-8dccd5ab1c9f
       slot: group_slot
@@ -101,7 +102,7 @@ default:
       uuid: c7597ef9-0cec-484e-9ce4-1bcd7c6704f3
       component_id: sdc.mercury.button
       inputs:
-        variant: secondary-inverted
+        variant: outline
         size: large
         label: 'See the six perks'
         href: '#perks'
@@ -167,7 +168,7 @@ default:
         padding_block_end: '64'
         background_color: muted
         section_header: true
-        width: 100%
+        width: 90%
         columns: '100'
         mobile_columns: '1'
         margin_block_start: '0'
@@ -184,6 +185,17 @@ default:
     -
       parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
       slot: header_slot
+      uuid: 2cdf106c-ad15-4169-bafd-2b576ea49f9b
+      component_id: sdc.mercury.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: start
+      label: 'Perks intro'
+    -
+      parent_uuid: 2cdf106c-ad15-4169-bafd-2b576ea49f9b
+      slot: group_slot
       uuid: c27bb361-d9ed-4cd5-923f-bda8d28b528d
       component_id: sdc.mercury.heading
       inputs:
@@ -193,8 +205,8 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: 9705013b-4dcb-4acf-9ecc-9eafc0d022db
-      slot: header_slot
+      parent_uuid: 2cdf106c-ad15-4169-bafd-2b576ea49f9b
+      slot: group_slot
       uuid: b7365cbc-0c97-4371-8335-7bea87fce8ed
       component_id: sdc.mercury.text
       inputs:
@@ -317,14 +329,15 @@ default:
       component_id: sdc.mercury.section
       inputs:
         width: 75%
-        margin_block_start: '48'
-        margin_block_end: '64'
+        margin_block_start: '0'
+        margin_block_end: '0'
         columns: '100'
         mobile_columns: '1'
         padding_block_start: '0'
-        padding_block_end: '0'
+        padding_block_end: '64'
         section_header: false
         section_footer: false
+        background_color: muted
       label: 'Donate and claim your bundle'
     -
       parent_uuid: ae0ff443-331f-4073-b479-68280fd4a4f1
@@ -378,18 +391,10 @@ default:
       uuid: 44bc0409-b8f1-4f26-ba84-e4db5f95d92d
       component_id: sdc.mercury.text
       inputs:
-        text: '<p>[Tax-deductibility statement, if applicable.]</p>'
-        text_size: text-sm
+        text: '<p>[Tax-deductibility statement, if applicable.]</p><p>[How and when perks are delivered after donating.]</p>'
+        text_size: text-xs
         text_color: inherit
-    -
-      parent_uuid: b17eefd0-f84a-4959-965e-316ec7463dd9
-      slot: group_slot
-      uuid: cc0bfd6c-e7af-442e-96f0-be07064cfc14
-      component_id: sdc.mercury.text
-      inputs:
-        text: '<p>[How and when perks are delivered after donating.]</p>'
-        text_size: text-sm
-        text_color: inherit
+        divider_above: true
   path:
     -
       alias: /perks-trial

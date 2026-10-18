@@ -97,6 +97,7 @@ props:
         - "16"
         - "32"
         - "64"
+        - "96"
       examples:
         - "0"
     padding_block_end:
@@ -107,6 +108,7 @@ props:
         - "16"
         - "32"
         - "64"
+        - "96"
       examples:
         - "0"
     background_color:

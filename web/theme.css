@@ -17,6 +17,7 @@
   --primary-foreground: #ffffff;
   --secondary: #d44418;
   --secondary-foreground: #ffffff;
+  --secondary-600: #c23d14;
   --muted: #eeeeee;
   --muted-foreground: #3d3d3d;
   --accent: #fdd362;
@@ -30,7 +31,7 @@
   --font-serif: "Aleo", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Fira Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
   --font-body: "Inter", Arial, Helvetica, sans-serif;
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   /* Brand pill radius (buttons; badges opt in via shape=pill): badcamp.org uses 2rem; no derivation of --radius gives it. */
   --radius-pill: 2rem;
   --shadow-x: 0;
@@ -67,6 +68,7 @@
   --primary-foreground: #ffffff;
   --secondary: #d44418;
   --secondary-foreground: #ffffff;
+  --secondary-600: #c23d14;
   --muted: #3d3d3d;
   --muted-foreground: #eeeeee;
   --accent: #fdd362;
@@ -79,7 +81,7 @@
   --font-sans: "Lexend", "Helvetica Neue", Arial, Helvetica, sans-serif;
   --font-serif: "Aleo", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Fira Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   --radius-pill: 2rem;
   --shadow-x: 0;
   --shadow-y: 1px;

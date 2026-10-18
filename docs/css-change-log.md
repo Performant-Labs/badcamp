@@ -42,9 +42,19 @@ changed in rework round 1 after A's review (W1, W2, W4, W5, W8); their old rulin
   Provenance: profile fonts line. Files from @fontsource-variable 5.3.0 (OFL 1.1).
   Ruling: brand fonts are token values; @font-face lives in web/fonts.css. No component code touched.
 
-[L1] --radius in :root -> 0.75rem  web/theme.css:L32  2026-10-18
+[L1] --radius in :root -> 0.75rem  web/theme.css:L32  2026-10-18  [superseded by L50]
   Provenance: profile "containers 0.75rem".
   Ruling: Mercury's rounded-sm/md/lg/xl all derive from --radius (L2), so one L1 edit restyles every container.
+  Superseded: brand container radius maps to Mercury's `xl` step at the stock token; moving the token shifted the whole scale.
+
+[L1] --radius in :root and .dark -> 0.5rem (stock value restored)  web/theme.css:L34, L84  2026-10-18
+  Provenance: Mercury 1.0.5 stock `--radius: 0.5rem`; profile "containers 0.75rem".
+  Trace (Pass 1): `@theme inline` derives `--radius-sm/md/lg/xl` as `--radius` -4px, -2px, +0, +4px, so at the stock 0.5rem Mercury's `xl` (the step cards, groups and panels use) is exactly 12px = 0.75rem. The brand container radius therefore maps to the `xl` step at the stock token.
+  Ruling: rework round 4 (A W10, O decision). Moving `--radius` (L1) to 0.75rem shifted the whole scale (every `sm/md/lg/xl` consumer, including the 6px icon tiles and any `rounded-lg` use) and forced per-consumer compensations. L1 stays at stock; no L2 change either (`--radius-xl` is already the right derivation). Pill radius is a separate token (`--radius-pill`) and is unaffected. Measured on `/perks-trial` at 360 and 1280: overlap panel, 6 perk cards and closing panel 12px; buttons and eyebrow 32px; icon tiles 6px (stock).
+
+[L4] card-icon `border_radius: medium` rounded-xl md:rounded-2xl -> rounded-xl  components/card-icon/card-icon.twig:L27  2026-10-18
+  Trace (Pass 1): `medium` = `rounded-xl md:rounded-2xl`; `xl` is `--radius` + 4px (12px at stock), but `2xl` is Tailwind's fixed 1rem (16px), not token-derived, so from `md` up the stock card-icon ignores the radius scale.
+  Ruling: the one genuine gap in the radius scale. L1 ruled out: `--radius` is correct at stock and changing it would not move a fixed 2xl; L2 ruled out: `--radius-2xl` is not defined by Mercury and adding one would still leave `medium` off the scale; L3 ruled out: no zone sets radius. An additive new option would leave the default card-icon at 16px, off the brand container radius, so this is a logged intended site-wide L4 change: every `medium` card-icon is now 12px at all widths. Existing uses affected: the 6 perk cards on this page only (Home uses `button` and `cta`). Output differs from stock only when `border_radius` is `medium` (checked: 142 of 400 random combinations, all of them `medium`).
 
 [L1] --radius-pill in :root -> 2rem  web/theme.css:L34 (and .dark L81)  2026-10-18  [added]
   Provenance: profile "buttons 2rem".
@@ -97,7 +107,7 @@ changed in rework round 1 after A's review (W1, W2, W4, W5, W8); their old rulin
 [L4] grid columns `3 columns, 2 on tablet` (md:grid-cols-2 lg:grid-cols-3)  components/grid/grid.twig:L31  2026-10-18
   Ruling: the brief's perk grid is 2 columns at md and 3 at lg; no stock grid/section variant gives 2 then 3. L1 ruled out because column count is not a token; L2 ruled out because the breakpoints are Tailwind defaults and unchanged; L3 ruled out because zones do not lay out. One new variant on the map instead of a duplicate grid component. Additive, byte-identical for stock values.
 
-[L4] heading `highlight_color` variant map (accent/primary/secondary -> text-*) + highlight span  components/heading/heading.twig:L54-L82  2026-10-18
+[L4] heading `highlight_color` variant map (accent/primary/secondary -> text-*) + highlight span  components/heading/heading.twig:L54-L93  2026-10-18
   Ruling: the headline highlights part of its text; the heading component has no inline-highlight prop. L1 ruled out because colours are already tokens, the need is a span; L2 ruled out because no derivation creates an inline element; L3 ruled out because a zone colours a whole area, not one phrase. Colours stay token-backed (text-accent), no raw value. Added to heading rather than a new headline component. Whitespace control keeps output identical to stock when `highlight_text` is unset (rework W4).
 
 [L5] stat-badge (new SDC): circle with value/label  components/stat-badge/stat-badge.twig  2026-10-18  [added]
@@ -105,6 +115,50 @@ changed in rework round 1 after A's review (W1, W2, W4, W5, W8); their old rulin
 
 [L5] panel (new SDC): bordered card with slot and optional overlap of the previous section  components/panel/panel.twig  2026-10-18  [added]
   Ruling: nothing in Mercury overlaps the previous section (no negative margins in any enum), and card/card-icon/group cannot render a white card around a level-2 heading plus text. Rejected: card (heading only renders when `url` is set), card-icon (hard-coded h3 skips heading level), group (background enum is primary/secondary/accent only), section (its background is a full-bleed absolute layer). Overlap amounts (-mt-8/-mt-10/-mt-12) are all <= the hero's bottom padding at each breakpoint (pb-10/13/16). L1-L4 cannot create a component.
+
+[L1] --secondary-600 in :root and .dark -> #c23d14  web/theme.css:L20, L71  2026-10-18  [added]
+  Provenance: profile brand block: secondary 600 `#c23d14`, "use as the background wherever small text sits on orange" (white on it 5.29:1; on #d44418 only 4.53:1). Rework round 3, S hold H2.
+  Ruling: a brand shade with no Mercury slot is a profile decision; the profile now says where it goes. Changing `--secondary` itself (L1) is ruled out because the profile keeps #d44418 as the secondary colour; no L2 derivation produces it (the `/90` opacity step only blends toward the page). So a second token.
+
+[L1] --secondary-600 in :root and .dark -> #c23d14  web/themes/custom/mercury/src/theme.css:L20, L70  2026-10-18  [added]
+  Provenance: same value. Ruling: fallback copy when the web-root `theme.css` is absent, as for --radius-pill and --ring.
+
+[L2] --color-secondary-600 -> var(--secondary-600) in @theme inline  web/themes/custom/mercury/src/main.css:L16  2026-10-18  [added]
+  Ruling: the token only becomes a utility (`bg-secondary-600`) through the `@theme inline` map.
+
+[L4] badge `secondary` style background bg-secondary -> bg-secondary-600 (hover /90 follows)  components/badge/badge.twig:L24  2026-10-18
+  Ruling: badge text is small (14px), the profile's rule for small text on orange applies to every secondary badge, so the variant map is the place, not the instance. L1 ruled out (changing --secondary would break the brand colour used by large areas); L2 ruled out (no derived step is #c23d14); L3 ruled out (no zone sets a badge's own fill). Intended site-wide: every `secondary` badge. Existing uses: none outside this page (one badge). Foreground stays `text-secondary-foreground` (white).
+
+[L4] button `outline` variant (border-current bg-transparent text-inherit hover:bg-current/10)  components/button/button.twig:L26  2026-10-18
+  Ruling: rework R2. The brief and mockup want an outline button on the blue band; the stock variants are all fills (`secondary-inverted` renders a charcoal fill with a yellow border, outweighing the primary CTA). L1 ruled out: no token makes a button transparent; L2 ruled out: opacity steps derive colours, not fills; L3 ruled out: zones set the foreground the button inherits, but not its fill; choosing an existing variant ruled out because none is transparent. New additive variant, zone-agnostic (uses the zone's foreground via currentColor, white on #0076a8 = 5.05:1). Keeps the opaque `ring-ring` focus.
+
+[L4] heading `break_after` (empty `span.lg:block` after the phrase)  components/heading/heading.twig:L66-L93  2026-10-18
+  Ruling: rework R3. The headline must break between its two sentences from lg up and wrap naturally below. L1 ruled out: no token carries a line break; L2 ruled out: breakpoints are Tailwind defaults and unchanged; L3 ruled out: zones do not touch inline flow; no existing heading prop or variant breaks text. Additive optional prop; output with no `break_after` and no `highlight_text` is byte-identical to stock. Rework round 4 (A W11): highlight and break are now one `replace({...})` call over the escaped text (strtr: single pass, longest match first), so neither can split the other's markup; when only one is set its entry is written twice with the same key and value. A break phrase that contains the highlight phrase wins (no nested span). Each replaces every occurrence of its phrase. Checked: none, highlight only, break only, both, overlapping and HTML-special cases render correctly, and unused output is byte-identical to stock (400 combinations).
+
+[L4] section `padding_block_start` / `padding_block_end` value `96` (pt/pb-16 md:20 xl:24)  components/section/section.twig:L42, L49  2026-10-18
+  Ruling: rework R4. The hero needs about 96px below its content so the overlapping card leaves ~48px clear (overlap 48px at xl). L3 prop exhausted: the enum stops at 64 (and 64 minus the 48px overlap left 16px). L1 and L2 ruled out: spacing scale unchanged, `--spacing` is the base unit, not a per-section value. Same scale as the existing margin `96`. Additive enum value; byte-identical for the stock values.
+
+[L4] text `divider_above` (w-full border-t border-current/30 pt-4)  components/text/text.twig:L37-L38, L49  2026-10-18
+  Ruling: rework R6b. The mockup has a rule above the small notes. A raw `<hr>` in the rich text is stripped by the text format (verified: 0 `<hr>` in the served HTML), and Mercury has no divider component. L1 ruled out: no token draws a rule; L2 ruled out: `/30` is the derivation used on `currentColor`; L3 ruled out: zones colour, they do not add lines. Additive boolean, zone-agnostic (current colour), default off and byte-identical to stock. `w-full` so it spans the group, not the text width.
+
+[L4] card-icon `border_radius` value `container` (rounded-lg)  components/card-icon/card-icon.twig:L29  2026-10-18  [removed 2026-10-18]
+  Ruling: rework R6c. See the radius trace below. `medium` is `rounded-xl md:rounded-2xl`; no stock value equals `--radius`.
+  Removed: not needed once `--radius` is stock; containers use their natural `xl`.
+
+[L5] panel corner radius rounded-xl -> rounded-lg  components/panel/panel.twig:L3  2026-10-18  [removed 2026-10-18]
+  Ruling: rework R6c, own new component. See the radius trace below.
+  Removed: reverted to `rounded-xl` (12px at the stock token).
+
+[L5] stat-badge wrapper `items-center` (stops the cross-axis stretch)  components/stat-badge/stat-badge.twig:L15  2026-10-18
+  Ruling: rework R1. The wrapper is `flex` (row); its child's default `align-items: stretch` stretched the circle to the grid cell's height and overrode `aspect-square` (237x321 at 768, 288x315 at 1280). Fixed in the component, where the aspect ratio is declared, and it centres the circle vertically in the 33% column. L1-L4 ruled out: no token, scale step, zone or existing variant controls alignment inside a new SDC. Measured: 224, 237, 288 px circles at 360, 768, 1280.
+
+[L1] Radius trace (no token change): containers render 0.75rem by choosing the scale step that equals `--radius`  web/theme.css:L32 unchanged  2026-10-18  [removed 2026-10-18]
+  Trace (Pass 1): `rounded-xl` -> `--radius-xl` -> `calc(var(--radius) + 4px)` (`src/main.css` `@theme inline`) = 16px; card-icon `medium` = `rounded-xl md:rounded-2xl` where `2xl` is Tailwind's fixed 1rem, not token-derived; `group` radius `xl` and my `panel` used `rounded-xl`.
+  Ruling: L1 `--radius: 0.75rem` is already correct. L2 ruled out as the place to fix it: setting `--radius-xl` to `var(--radius)` would make `xl` equal `lg` for every other `rounded-xl` consumer (`card`, `hero-side-by-side`), collapsing the scale. L3 ruled out: no zone changes radius. The exact step is `rounded-lg` (= `--radius`). Fixed per consumer: `group` instance prop `radius: lg` (existing enum, no code), `panel` L5 above, `card-icon` additive `container` value above. Measured 12px on the overlap card, perk cards and closing panel at all widths.
+  Removed: its conclusion (choose `lg`) came from moving the token; replaced by the stock-token entry above.
+
+[L3] Instance prop choices with no code (Canvas inputs): hero and perks `width: 90%` (H1), closing section `background_color: muted`, margins 0, `padding_block_end: 64` (R6a), perks intro heading and text wrapped in a `group` (column, gap md) (R5), hero heading `break_after`, hero secondary button `variant: outline`, closing notes one `text` with `divider_above`, `text_size: text-xs`, closing group `radius: xl` (the default step, 12px at the stock token)  recipes/badcamp_pages/content/canvas_page/7562db90-....yml  2026-10-18
+  Ruling: all choose existing (or the additive) variants, so the highest layer is the Canvas prop. L1 ruled out: none of these should apply site-wide; L2 ruled out: no derivation involved. H1: narrowing uses Mercury's existing `section` `width` prop, not the site container (badcamp#10 owns that); only inner content narrows, the zone backgrounds stay full-bleed. R5: the section header slot puts no gap between children, so a `group` supplies the gap with no code (site-wide change to `section` header ruled out as broader than needed).
 
 [L4] badge base radius rounded-sm -> rounded-pill  components/badge/badge.twig  2026-10-18  [removed 2026-10-18]
   Ruling: (kept for history) site-wide pill badges, A review W1. Reverted: the brand sets no badge shape. Replaced by the `shape` entry above.

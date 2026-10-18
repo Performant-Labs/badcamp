@@ -103,3 +103,9 @@ props:
       default: accent
       examples:
         - accent
+    break_after:
+      type: string
+      title: Line break after
+      description: A phrase after which the heading breaks onto a new line from the lg breakpoint up (below lg it wraps naturally). Must match the heading text exactly. Leave empty for no forced break.
+      examples:
+        - Give $100 or more.

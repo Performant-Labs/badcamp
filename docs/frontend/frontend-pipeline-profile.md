@@ -25,7 +25,7 @@
 - **Source:** badcamp.org's live theme, `https://www.badcamp.org/themes/custom/bay_area_drupal/css/bay-area-drupal-styles.css`
 - **Colours:**
   - primary `#0076a8` (600 `#005d85`);
-  - secondary `#d44418` (600 `#c23d14`, for small text on orange);
+  - secondary `#d44418`. Use the 600 shade `#c23d14` as the background wherever small text sits on orange (white on `#c23d14` is 5.29:1; on `#d44418` it is only 4.53:1);
   - highlight `#fdd362`;
   - text `#3d3d3d`; footer `#242424`.
 - **Neutrals (badcamp.org scale, use only these):** `#fff` (000), `#eee` (100), `#ccc` (200), `#929292` (300), `#757575` (350), `#646464` (400), `#3d3d3d` (500, text), `#242424` (600, footer).
@@ -38,7 +38,9 @@
 ## Verification config
 - **Commands:** run through DDEV: `ddev drush cr`, `ddev drush content:export …`, `ddev drush recipe …`.
 - **axe base URL:** the local site URL above (`AXE_BASE_URL`).
+- **Content width:** the site-wide container (header, navbar and footer) belongs to badcamp#10. Pages narrow their own content with Mercury's existing `section` `width` prop; don't change the container.
 - **Chrome route** (for sizing an L1 token change): `/`, the home page, which renders the header, navbar and footer.
+- **Entry paths (U):** `/perks-trial` is loaded directly. Nothing links to it yet; the trial page isn't in a menu.
 - **Stateful-surface inventory:** none yet. The landing page has no stateful surface; anchor links only.
 - **Breakpoint overrides:** none (Tailwind defaults; navbar at `md` / 48rem).
 - **CSS change log:** `docs/css-change-log.md`, per `languages/css/css-change-workflow.md`. Every CSS change gets a trace and an `[L1]`…`[L5]` entry, using the adapter's L1–L5 mapping.

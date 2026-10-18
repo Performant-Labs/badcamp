@@ -63,19 +63,33 @@
   )
 -%}
 
-{#- Split the heading around the highlighted phrase (first match) so it can be wrapped in a span. -#}
+{#- Highlight and line-break are applied to the escaped text with ONE replace (strtr: single pass, longest match first), so neither can split the other's markup. If only one feature is on, its entry is written twice (same key, same value). -#}
 {%- set has_highlight = highlight_text is not empty and heading_text is not empty and highlight_text in heading_text ? 'yes' : 'no' -%}
-{%- set heading_parts = has_highlight == 'yes' ? heading_text|split(highlight_text, 2) : [heading_text, ''] -%}
+{%- set has_break = break_after is not empty and heading_text is not empty and break_after in heading_text ? 'yes' : 'no' -%}
 {%- set highlight_class =
   highlight_variants.apply({
     highlightColor: highlight_color|default('accent')
   })
 -%}
 
-{#- Whitespace control keeps the output for a heading without a highlight identical to stock. -#}
+{#- Whitespace control keeps the output for a heading without a highlight or break identical to stock. -#}
 {%- set heading_text_markup -%}
-  {%- if has_highlight == 'yes' -%}
-    {{ heading_parts[0] }}<span class="{{ highlight_class }}">{{ highlight_text }}</span>{{ heading_parts[1] }}
+  {%- if has_highlight == 'yes' or has_break == 'yes' -%}
+    {#- An empty block-level span from lg up forces the line break; below lg the text wraps naturally. -#}
+    {%- set break_markup = '' ~ (break_after|e) ~ '<span class="lg:block"></span>' -%}
+    {%- set highlight_markup = '<span class="' ~ highlight_class ~ '">' ~ (highlight_text|e) ~ '</span>' -%}
+    {%- set highlight_key = has_highlight == 'yes' ? '' ~ (highlight_text|e) : '' ~ (break_after|e) -%}
+    {%- set highlight_value = has_highlight == 'yes' ? highlight_markup : break_markup -%}
+    {%- set break_key = has_break == 'yes' ? '' ~ (break_after|e) : highlight_key -%}
+    {%- set break_value = has_break == 'yes' ? break_markup : highlight_value -%}
+    {{
+      ('' ~ (heading_text|e))
+        |replace({
+          (highlight_key): highlight_value,
+          (break_key): break_value
+        })
+        |raw
+    }}
   {%- else -%}
     {{ heading_text }}
   {%- endif -%}

@@ -185,3 +185,82 @@ All 12 main-content measurements pass, and `:focus-visible` matched for each. Ro
 2. **Defining the token activates the stock `/50` opacity**, which then fails 3:1. A token-only fix is not enough; the L4 `ring-ring/50` edit is part of the same change. The adapter should say that when a token that was previously absent is added, the utilities that reference it start generating and need re-measuring.
 3. **Focus-ring measurement needs a settle delay** (buttons have `duration-300`) and `focus({ focusVisible: true })`; pressing Tab first reveals the skip link and pollutes the pixel diff. T's method (diff of focused vs blurred pixels against the unfocused backdrop) is the right one and worth putting in the adapter's T section.
 4. **One ring colour per scheme works when it is a near-black or near-white neutral**: against a mid-tone brand blue the usable range is L <= 0.019 or L >= 0.574, which `#242424` and `#eee` satisfy. A brand where the band is mid-luminance on both sides of that range would need the two-tone form.
+
+---
+
+## Rework round 3
+
+From S's audit (REWORK: R1 to R6, plus decisions on holds H1 and H2). Base is commit `52978de`. Every CSS change has an L1 to L5 trace and a "ruled out" line in `docs/css-change-log.md` (now 37 entries).
+
+| Item | Trace and fix | Layer |
+|---|---|---|
+| **R1** badge not a circle | The wrapper is a flex row; the child's default `align-items: stretch` stretched the circle to the grid cell and overrode `aspect-square`. Wrapper now `items-center`, which also centres it vertically in the 33% column. Measured 224 / 237 / 288 px circles at 360 / 768 / 1280. | L5 (the new SDC) |
+| **R2** outline button | No stock variant is transparent (`secondary-inverted` is a charcoal fill). Added additive `button` variant `outline` (`border-current bg-transparent text-inherit hover:bg-current/10`), zone-agnostic; white on `#0076a8` 5.05:1. Used on "See the six perks". | L4 additive |
+| **R3** headline break | Additive `heading` prop `break_after`: an empty `span.lg:block` after the phrase (no `<br>`), so it breaks between the sentences from `lg` up and wraps naturally below. 1280: 2 lines; 768 and 360: 3. Highlight and break now share one escaped-string replace. | L4 additive |
+| **R4** hero rhythm | The section padding enum stopped at 64 (leaving 16px under the buttons). Added additive padding value `96`; hero `padding_block_end: 96`. Clear space under the buttons: 48px at 1280, 40px at 768 (badge 62 / 82px). | L4 additive + L3 prop |
+| **R5** heading to intro gap | No code: the section header slot adds no gap, so heading and intro sit in an existing `group` (column, gap md). Measured 16px at every width. A site-wide `section` header change was ruled out as broader than needed. | L3 props |
+| **R6a** closing zone | Closing section is now `background_color: muted`, margins 0, `padding_block_end: 64`; the page stays grey to the footer. | L3 props |
+| **R6b** notes | Mercury has no divider and the text format strips a raw `<hr>` (checked: 0 `<hr>` in served HTML). Added additive `text` boolean `divider_above` (`w-full border-t border-current/30 pt-4`); notes merged into one `text`, `text-xs` (12 / 14 / 16px against the 16 / 18 / 20px sentence). | L4 additive |
+| **R6c** radius | `rounded-xl` = `--radius` + 4px = 16px; `card-icon` `medium` is `rounded-xl md:rounded-2xl` (Tailwind's fixed 1rem). `--radius` itself (0.75rem) was right. Changing `--radius-xl` in L2 would collapse `xl` into `lg` for every other consumer (`card`, `hero-side-by-side`), so not done. Containers now use the exact step `rounded-lg`: `group` instance prop `radius: lg` (no code), `panel` (L5), and additive `card-icon` `border_radius: container`. Measured 12px on the overlap card, perk cards and closing panel at all widths. | L3 prop, L5, L4 additive |
+| **H1** content width | `section` `width: 90%` on the hero and perks sections (existing prop; only the inner content narrows, backgrounds stay full-bleed); the inset panels stay at 75%. Content is 1123px at 1280 (was 1248). The container (badcamp#10) is untouched. | L3 props |
+| **H2** eyebrow on orange | New token `--secondary-600: #c23d14` (L1 web-root light and `.dark`, L1 fallback in `src/theme.css`, L2 `--color-secondary-600`), and the badge `secondary` style now uses `bg-secondary-600` (L4, intended site-wide, since badge text is always small). Eyebrow measured `rgb(194, 61, 20)`; white on it is 5.29:1. | L1 + L2 + L4 |
+
+### Results
+
+- **Page:** recipe re-exported (absolute `--dir`, only the page's yml; an early export without an id also wrote Home, which I deleted); hard-deleted the page by id, applied the recipe: `/perks-trial` 200 again (id 5, alias carried), 31 components, 0 NULL `component_version`.
+- **Gate:** `npm run lint:css` exit 0, 0 findings.
+- **Byte-identity vs stock (`3e99366`, 400 random combinations per component):** `heading`, `card-icon`, `text`, `grid`, `section` 0 differences. `badge`, `button` and `group` differ as logged (ring and secondary-600; ring, radius and outline; background pairing).
+- **axe (360 / 768 / 1280, light and dark):** 0 violations on page content in all 6 runs; only the chrome logo `link-name`. No overflow, no tap target under 44px in `<main>`.
+- **Focus contrast** (same method as round 2; the new outline button included): light `#242424` on `#0076a8` = 3.07:1, dark `#eee` on `#0076a8` = 4.35:1, all three buttons at 360 and 1280. Pass.
+- **Build:** `npm run build` twice byte-identical (70,837 B); `git diff` of `build/main.min.css` against HEAD is the expected one-line change from the new utilities. `mercury.settings scheme` restored to `light`.
+- Screenshots in the handoff dir refreshed (`perks-{light,dark}-{360,768,1280}.png`).
+
+### Files changed this round
+
+`web/theme.css`, `src/theme.css`, `src/main.css`, `components/{badge,button,heading,section,text,card-icon,panel,stat-badge}/*` (twig and yml where props were added), `build/main.min.css`, `recipes/badcamp_pages/content/canvas_page/7562db90-...yml`, `docs/css-change-log.md`, this handoff, screenshots.
+
+### Layer I would place differently
+
+Nothing flagged. The `outline` variant and `divider_above` are additive L4 edits to shared components because no existing variant could carry them; both are zone-agnostic (`currentColor`) so they work on any zone.
+
+### New adapter findings
+
+1. **A fixed-shape child of a flex wrapper is stretched by the parent's default `align-items: stretch`**, which overrides `aspect-ratio`. S found it, F's own screenshots at 768 showed it. Add to the adapter's "new component" guidance: set `items-center` (or `self-center`) on any wrapper around an aspect-ratio element, and measure its box at every breakpoint.
+2. **The Canvas text format strips `<hr>` from rich-text props at render** (stored in the input, absent in the HTML). Anything the text prop needs beyond basic inline and block tags has to be a component feature. Mercury 1.0.5 has no divider component.
+3. **Mercury's `--radius` scale never gives containers the brand radius.** Only `rounded-lg` equals `--radius`; `sm`, `md`, `xl` are offsets and `card-icon` uses Tailwind's fixed `2xl`. The adapter's L1 token notes should list which utilities equal the token, so a brand radius is applied by choosing `lg`, not by editing L2 (which would collapse the scale). Same note as S's finding 3.
+4. **Escaped-string replace beats splitting for inline markup in a Twig prop.** Building `heading` markup with `'' ~ (text|e)` then `replace({...})` and printing with `|raw` keeps both highlight and break in one path and leaves the unused case byte-identical. (`|e` returns Markup; coerce with `'' ~` before `replace`, and for mapping keys.)
+5. **Instance spacing enums can be exhausted by a design.** `section` padding stopped at 64 while the mockup's rhythm needed about 96; the adapter's L3 ("choose the prop") should say the next step is an additive enum value in the variant map (L4), logged, with the existing margin `96` scale as the model.
+6. **`content:export` without an entity id exports every entity of the type.** An early export with a shell variable that came back empty wrote Home too. Always pass the id and check the file list.
+
+---
+
+## Rework round 4
+
+Two items from A's Round 4 (W10, W11). Still uncommitted on top of `52978de`.
+
+**W10, radius placement (O's decision).** Round 3 had moved L1 `--radius` to 0.75rem and compensated per consumer. Trace: `@theme inline` derives `sm/md/lg/xl` as `--radius` -4px, -2px, +0, +4px, so at the stock 0.5rem Mercury's `xl` (what cards, groups and panels use) is already 12px = the brand's 0.75rem. Moving the token shifted the whole scale (for example icon tiles went 6px to 10px) and needed the compensations.
+- L1 `--radius` reverted to stock **0.5rem** in web-root `theme.css` (`:root` and `.dark`). `src/theme.css` already held the stock value (never changed), so nothing mirrors it. `--radius-pill` is separate and untouched.
+- Compensations reverted: `panel` back to `rounded-xl`; the `card-icon` `container` option removed; the closing `group` back to the default `radius: xl` (page input).
+- The one genuine gap, `card-icon` `medium` (`rounded-xl md:rounded-2xl`, where `2xl` is Tailwind's fixed 1rem): changed to `rounded-xl`. I chose a logged intended site-wide L4 change over an additive option, because an option would leave the default `card-icon` off the brand container radius. Existing uses: the 6 perk cards on this page only. Checked byte-identity: output differs from stock only when `border_radius` is `medium` (142 of 400 random combinations, all `medium`).
+- Log: the old L1 `--radius -> 0.75rem` entry is `[superseded by L50]` with the reason ("brand container radius maps to Mercury's `xl` step at the stock token; moving the token shifted the whole scale"); the `container`, `panel` and "Radius trace" entries are `[removed]`; two new entries (stock `--radius`, `card-icon` medium). 39 entries in total.
+
+**Measured corner radius, `/perks-trial`, 360 and 1280 (computed style of every element in `<main>` with a radius):**
+
+| Element | 360 | 1280 |
+|---|---|---|
+| Overlap panel, 6 perk cards, closing panel | 12px | 12px |
+| Buttons and eyebrow pill | 32px (pill token) | 32px |
+| Icon tiles | 6px (stock `rounded-md`) | 6px |
+| Stat badge | full circle | full circle |
+
+Confirmed 12px for every card, panel and container; the pill radius and the rest of the scale are unaffected (icon tiles are back to the stock 6px).
+
+**W11, heading.** `break_after` and highlight now go through a single `replace({...})` over the escaped text (strtr: one pass, longest match first), so neither can split the other's markup. When only one feature is set its entry is written twice with the same key and value (avoids `merge`, which would renumber integer-like phrases). Rendered cases checked: none, highlight only, break only, both, a break phrase containing the highlight phrase (break wins, no nested span), HTML-special characters. Unused output is byte-identical to stock (400 combinations, 0 differences).
+
+**Checks:** `npm run lint:css` exit 0. axe light at 360/768/1280: 0 violations on page content (chrome logo `link-name` only), no overflow, no tap target under 44px in `<main>`. `npm run build` twice byte-identical (70,837 B); against HEAD `build/main.min.css` differs by the one expected minified line. Recipe re-exported (page id 5 exported by id; the only file is the page's yml) and re-applied after a hard delete: `/perks-trial` 200, 31 components, 0 NULL `component_version`.
+
+**Files changed this round:** `web/theme.css`, `components/{panel,card-icon,heading}/*`, `build/main.min.css` (rebuilt, unchanged in content apart from the one line), the page input (via the DB, exported to `recipes/.../7562db90-....yml`), `docs/css-change-log.md`, screenshots (`perks-light-*`), this handoff.
+
+**New adapter findings:**
+1. **A brand radius is met by choosing the right step of Mercury's scale, not by editing `--radius`.** At the stock 0.5rem, `xl` = 12px; moving the token shifts every consumer. The adapter's L1 radius note should say this and name `card-icon` `medium` (fixed `md:rounded-2xl`) as the only stock consumer that ignores the scale. This corrects my round 3 finding 3.
+2. **For several phrase replacements in one Twig string, use one `replace({...})` (strtr).** Sequential replaces let the second match inside the first's markup. Duplicate-key padding is the simple way to keep the map static when a feature is off.
