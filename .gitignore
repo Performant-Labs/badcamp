@@ -1,11 +1,15 @@
 # Dependencies managed by Composer.
-/recipes
+/recipes/*
+!/recipes/badcamp_pages
 /vendor
 /web/core
 /web/libraries
 /web/modules/contrib
 /web/profiles/contrib
 /web/themes/contrib
+
+# Repo-root tooling (stylelint, playwright, axe); see package.json.
+/node_modules
 
 # macOS
 .DS_Store
