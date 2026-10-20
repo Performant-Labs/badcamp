@@ -138,6 +138,29 @@
   exclude_id; AC 5 missing-field coverage representative).
 - **Evidence:** `handoff-S.md` (PASS).
 
+## merge — 2026-10-20T11:6xZ
+- **Phase ended:** merge verification **GREEN** (plugin-owned, `unit (scripts/run-tests.sh): GREEN
+  [exit 0]` at 997b8d3); no `merge.checks` configured. Branch pushed; **PR #17** opened to `main`
+  (closes #6) and recorded on the run (`prNumber` 17). PR mergeable (CLEAN), **no CI workflows**
+  configured in this repo (0 workflows, 0 check-runs), so there is no CI-green gate to await.
+- **Decided:** stop at the PR per the operator's instruction ("drive every phase to a pull
+  request"); no self-merge (no CI to go green; repo precedent 0004 leaves merge to the operator).
+  Reverted the pre-existing `web/robots.txt` scaffold drift in the worktree so the merge advance's
+  committed-state check passed; the drift remains in the primary checkout and stays uncommitted.
+- **Evidence:** `gh pr view 17` (state OPEN, mergeable MERGEABLE); commit `a812890` (feature) +
+  `997b8d3` (a-dup/S handoffs).
+
+## Chain Summary (closing the cycle)
+- **Run id:** `0006-issue-6` (worktree basename; branch `issue-0006-issue-6`). **PR:** #17.
+- **Outcome:** all phases PASS — preflight PASS, brief dual-review gate PASS (round 2, after BLOCK),
+  A PASS (0 block), T-red RED confirmed, diff dual-review gate PASS, A-dup PASS, S PASS, merge
+  verification GREEN. Design + ui-walkthrough N/A (uiSurface false, recorded).
+- **Delivered:** `badcamp_sponsors` — new `CouponDuplicateFinder` service (single live-coupon query),
+  validator delegation, `coupon`+`restore` node-access branch refusing a live-duplicate restore.
+  Test-first: 2 new Kernel test files (9 tests), RED→GREEN, phpcs clean.
+- **Next:** operator merges PR #17 (or the run is re-opened for fixes); the wayfinder's next story
+  is unblocked once merged.
+
 ## t-green — 2026-10-20
 - **Phase ended:** independent GREEN + Tier 2 verification passed. `--testsuite kernel` → **OK (56
   tests, 671 assertions)**; `--testsuite unit` → **OK (10 tests, 15 assertions)**. Both match F's
