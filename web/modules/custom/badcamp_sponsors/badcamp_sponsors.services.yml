@@ -4,6 +4,10 @@ services:
     arguments:
       - '@entity_type.manager'
       - '@entity_field.manager'
+  badcamp_sponsors.coupon_duplicate_finder:
+    class: Drupal\badcamp_sponsors\CouponDuplicateFinder
+    arguments:
+      - '@entity_type.manager'
   badcamp_sponsors.delete_refusal_subscriber:
     class: Drupal\badcamp_sponsors\EventSubscriber\DeleteRefusalSubscriber
     arguments:

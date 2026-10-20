@@ -32,16 +32,9 @@ final class CouponCodeUniqueConstraintValidator extends ConstraintValidator {
       return;
     }
 
-    $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('type', 'coupon')
-      ->condition('field_coupon_code.value', $code)
-      ->condition('field_coupon_sponsor.target_id', $sponsor_id)
-      ->condition('field_coupon_campaign.target_id', $campaign_id);
-    if (!$value->isNew()) {
-      $query->condition('nid', $value->id(), '<>');
-    }
-    if ($query->range(0, 1)->execute() !== []) {
+    $duplicates = \Drupal::service('badcamp_sponsors.coupon_duplicate_finder')
+      ->findLiveDuplicates($code, $sponsor_id, $campaign_id, !$value->isNew() ? (int) $value->id() : NULL);
+    if ($duplicates !== []) {
       $this->context->buildViolation($constraint->message)
         ->setParameter('%code', $code)
         ->atPath('field_coupon_code')

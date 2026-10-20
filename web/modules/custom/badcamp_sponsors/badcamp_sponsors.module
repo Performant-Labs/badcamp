@@ -33,6 +33,11 @@ use Drupal\pathauto\PathautoState;
  *   permission the hook stays neutral so core grants the view of published
  *   coupons as usual.
  *
+ * A third rule guards the 'restore' operation: restoring a coupon whose
+ * (normalized code, sponsor, campaign) matches a live coupon is forbidden, so
+ * trash's restore cannot resurrect a duplicate. Like the delete rule it only
+ * forbids, never grants.
+ *
  * Every other bundle and operation gets no opinion, so sponsors and campaigns
  * stay viewable by ordinary users.
  */
@@ -58,6 +63,27 @@ function badcamp_sponsors_node_access(NodeInterface $entity, string $operation, 
         ->addCacheTags(['node_list:coupon']);
     }
     return AccessResult::neutral()->addCacheTags(['node_list:coupon']);
+  }
+
+  if ($bundle === 'coupon' && $operation === 'restore') {
+    if (!$account->hasPermission('restore node entities')) {
+      return AccessResult::neutral()->addCacheTags(['node_list:coupon'])->cachePerPermissions();
+    }
+    $code = CouponCodeNormalizer::normalize((string) ($entity->get('field_coupon_code')->value ?? ''));
+    $sponsor_id = $entity->get('field_coupon_sponsor')->target_id;
+    $campaign_id = $entity->get('field_coupon_campaign')->target_id;
+    if ($code === '' || $sponsor_id === NULL || $campaign_id === NULL) {
+      return AccessResult::neutral()->addCacheTags(['node_list:coupon'])->cachePerPermissions();
+    }
+    $finder = \Drupal::service('badcamp_sponsors.coupon_duplicate_finder');
+    $duplicates = $finder->findLiveDuplicates($code, $sponsor_id, $campaign_id, (int) $entity->id());
+    if ($duplicates !== []) {
+      return AccessResult::forbidden()
+        ->setReason(sprintf('Cannot restore coupon: the code "%s" is already used for this sponsor and campaign.', $code))
+        ->addCacheTags(['node_list:coupon'])
+        ->cachePerPermissions();
+    }
+    return AccessResult::neutral()->addCacheTags(['node_list:coupon'])->cachePerPermissions();
   }
 
   return AccessResult::neutral();
