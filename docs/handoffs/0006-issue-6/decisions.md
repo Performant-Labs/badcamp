@@ -96,6 +96,48 @@
 - **Evidence:** `handoff-T-red.md` (exact failing output); `phpcs --standard=Drupal,DrupalPractice`
   clean on both new files after fixing two docblock short-description wraps and one unused `$live`.
 
+## implement — 2026-10-20T11:2xZ
+- **Phase ended:** F implemented against the RED contract (0 tests touched); the plugin's t-green
+  advance confirmed **GREEN** (`unit (scripts/run-tests.sh): GREEN [exit 0]`).
+- **Decided:** committed the code + tests + handoffs-so-far as `a812890`
+  (`feat(badcamp_sponsors): refuse restoring a coupon that would duplicate a live coupon's code`,
+  Closes #6, `Co-Authored-By: Aftersight Coding Pipeline`) — the diff gate needs a committed diff.
+  Added `.gitignore` entries for the dual-review scratch sidecars
+  (`docs/handoffs/*/*.prompt.txt`, `docs/handoffs/*/*.usage.json`). `web/robots.txt` scaffold drift
+  left uncommitted.
+- **Assumed:** the single-query invariant (grep = 1 hit in `CouponDuplicateFinder.php:45`) and the
+  finder's live-only behaviour (no explicit `deleted` condition) hold in the committed diff.
+- **Hedged:** none.
+- **Evidence:** `handoff-F.md`, `handoff-T-green.md` (independent GREEN + Tier 1/Tier 2 clean);
+  `git show --stat a812890`.
+
+## diff dual-review gate — 2026-10-20T11:3xZ
+- **Phase ended:** **PASS** (no BLOCK findings) on the committed diff (base 0a1e109, head a812890,
+  `docs/handoffs/**` withheld).
+- **Decided:** none to fold; the diff matches the brief's amended Direction (finder + validator
+  delegation + restore branch; single-query; inline reason; neutral tagged/contexted).
+- **Evidence:** `dual-review-diff.md` (PASS).
+
+## a-dup — 2026-10-20T11:4xZ
+- **Phase ended:** A-dup **PASS** (0 block; 1 warn + 1 nit) — no parallel path, no drift; advancing
+  past ui-walkthrough (N/A) to S.
+- **Decided:** confirmed F **extracted** the single `field_coupon_code.value` query into the finder
+  (grep = 1 hit, `CouponDuplicateFinder.php:45`) and **extended** the existing
+  `badcamp_sponsors_node_access()`; A's two decisions honored (locator + inline reason); forbidden and
+  neutral returns both tagged/contexted; `accessCheck(FALSE)` + int casts + ascending + exclude, no
+  explicit `deleted` condition. A-dup's warn (.gitignore dual-review scratch ignores, benign hygiene)
+  noted, not blocking.
+- **Evidence:** `handoff-A-dup.md` (PASS).
+
+## spec-audit — 2026-10-20T11:5xZ
+- **Phase ended:** S **PASS** — all 9 acceptance criteria verified (file:line + test-name evidence),
+  do-not-reopen decisions and out-of-scope respected, no rework routed.
+- **Decided:** S independently re-verified (not just trusted prior reports): kernel 56/671 green,
+  unit 10/15 green, phpcs clean on all touched files, single-query grep = 1 hit, no existing test
+  edited, no core/contrib/composer changes. Two non-blocking notes confirmed (redundant restore
+  exclude_id; AC 5 missing-field coverage representative).
+- **Evidence:** `handoff-S.md` (PASS).
+
 ## t-green — 2026-10-20
 - **Phase ended:** independent GREEN + Tier 2 verification passed. `--testsuite kernel` → **OK (56
   tests, 671 assertions)**; `--testsuite unit` → **OK (10 tests, 15 assertions)**. Both match F's
