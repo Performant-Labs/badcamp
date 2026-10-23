@@ -32,17 +32,15 @@ ddev drush site:install /var/www/html/recipes/drupal_cms_starter --yes
 
 ## Coding pipeline
 
-This project uses Performant Labs' coding pipelines (Claude Code and OpenCode runners), pinned in
-`.aftersight/pipeline-pin.json`. The releases come from a private repository, so setting them up
-needs read access to it. After cloning, from the project root:
-
-```shell
-git clone git@github.com:Performant-Labs/aftersight.git ~/aftersight-pipeline
-git -C ~/aftersight-pipeline checkout opencode-pipeline-v0.1.0
-node ~/aftersight-pipeline/scripts/pipeline-shim.mjs                        # OpenCode
-node ~/aftersight-pipeline/scripts/pipeline-resolve.mjs --pipeline claude   # Claude
-node .aftersight/releases/claude/workflow/sync-role-docs.mjs --project .   # Claude role docs
-```
+This project uses Performant Labs' coding pipelines, loader only: claude-pipeline 0.2.2 (Claude Code)
+or OpenCode 2 (opencode-pipeline 2.x). A loader goes in your own client configuration, once per machine,
+and nothing is added to this repository; the project's configuration lives on the Aftersight server and
+reaches a run only through its snapshot (`aftersight config push` seeds it), so nothing is read from or
+written into the checkout at run time. The releases come from a private repository, so setup needs read
+access to it. Follow the Aftersight
+[quick start](https://github.com/Performant-Labs/aftersight/blob/main/docs/runbooks/pipeline-install.md)
+(decisions: [ADR 0024](https://github.com/Performant-Labs/aftersight/blob/main/docs/adr/0024-engine.md)),
+then link the working copy with `aftersight link`.
 
 Tests run with `scripts/run-tests.sh` (PHPUnit inside DDEV).
 
